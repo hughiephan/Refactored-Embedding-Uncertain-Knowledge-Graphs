@@ -16,7 +16,7 @@ Make sure your local environment has Python and the following libraries (TensorF
 
 If you want to have a precise environment with all the libraries installed, consider using anaconda `conda create -n ukge --file anaconda.txt` 
 
-## Run
+## Training
 
 To run the experiments, use:
 ```

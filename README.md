@@ -12,7 +12,7 @@ This repository includes the code of UKGE and data used in the experiments. The 
 
 ## Install Python and Libraries
 
-Make sure your local environment has Python and the following libraries (TensorFlow, scikit-learn, pandas) installed by running the commands `pip install -r requirements.txt`:
+Make sure your local environment has Python and the following libraries (TensorFlow, scikit-learn, pandas) installed by running the commands `pip install -r requirements.txt`
 
 ## Run
 

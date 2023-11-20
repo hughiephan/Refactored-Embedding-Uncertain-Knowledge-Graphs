@@ -2,7 +2,7 @@
 
 This repository includes the code of UKGE and data used in the experiments. The original model can only run with Tensorflow 1.0, we made some minor changes so it can be run with Tensorflow 2.0
 
-# (Optional) Install Tools
+## Install Tools (Optional) 
 
 - For managing the Python, PyTorch, and other libraries environment, please install Anaconda: https://docs.anaconda.com/free/anaconda/install/windows
 
@@ -10,17 +10,12 @@ This repository includes the code of UKGE and data used in the experiments. The 
 
 - For downloading the code from Github, please install Source Tree: https://www.sourcetreeapp.com
 
-## Install Libraries
+## Install Python and Libraries
 
+Make sure your local environment has Python and the following libraries (TensorFlow, scikit-learn, pandas) installed by running the commands `pip install -r requirements.txt`:
 
-- And make sure your local environment has the following installed using the commands `pip install -r requirements.txt`:
-```
-tensorflow
-scikit-learn
-panda
-```
+## Run
 
-## Run the experiments
 To run the experiments, use:
 ```
 python ./run/run.py --data ppi5k --model rect --batch_size 1024 --dim 128 --epoch 100 --reg_scale 5e-4

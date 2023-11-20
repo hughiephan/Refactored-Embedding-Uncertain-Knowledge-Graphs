@@ -14,6 +14,8 @@ This repository includes the code of UKGE and data used in the experiments. The 
 
 Make sure your local environment has Python and the following libraries (TensorFlow, scikit-learn, pandas) installed by running the commands `pip install -r requirements.txt`
 
+If you want to have a precise environment with all the libraries installed, consider using anaconda `conda create -n ukge --file anaconda.txt` 
+
 ## Run
 
 To run the experiments, use:

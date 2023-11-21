@@ -66,26 +66,6 @@ class Validator(object):
     def build_by_var(self, test_data, tf_model, this_data, sess):
         raise NotImplementedError("Fatal Error: This model' validator didn't implement its build_by_var() function!")
 
-    def build_by_pickle(self, test_data_file, model_dir, data_filename, pickle_file, loadComplEx=False):
-        """
-        :param pickle_file: pickle embedding
-        :return:
-        """
-        # load the saved Data()
-        self.this_data = data.Data()
-        data_save_path = join(model_dir, data_filename)
-        self.this_data.load(data_save_path)
-
-        # load testing data
-        self.load_test_data(test_data_file)
-
-        self.model_dir = model_dir  # used for saving
-
-        with open(pickle_file, 'rb') as f:
-            ht, r = pickle.load(f)  # unpickle
-        self.vec_c = ht
-        self.vec_r = r
-
     def load_hr_map(self, data_dir, hr_base_file, supplement_t_files, splitter='\t', line_end='\n'):
         """
         Initialize self.hr_map.
@@ -176,40 +156,11 @@ class Validator(object):
         print("Loaded test data from %s, %d out of %d." % (filename, len(triples), num_lines))
         # print("Rel each cat:", self.rel_num_cases)
 
-    def load_triples_into_df(self, filename):
-        num_lines = 0
-        triples = []
-        for line in open(filename):
-            line = line.rstrip('\n').split('\t')
-            if len(line) < 4:
-                continue
-            num_lines += 1
-            h = self.this_data.con_str2index(line[0])
-            r = self.this_data.rel_str2index(line[1])
-            t = self.this_data.con_str2index(line[2])
-            w = float(line[3])
-            if h is None or r is None or t is None or w is None:
-                continue
-            triples.append([h, r, t, w])
-        return pd.DataFrame(triples, columns=['v1','relation','v2','w'])
-
     def con_index2vec(self, c):
         return self.vec_c[c]
 
     def rel_index2vec(self, r):
         return self.vec_r[r]
-
-    def con_str2vec(self, str):
-        this_index = self.this_data.con_str2index(str)
-        if this_index == None:
-            return None
-        return self.vec_c[this_index]
-
-    def rel_str2vec(self, str):
-        this_index = self.this_data.rel_str2index(str)
-        if this_index == None:
-            return None
-        return self.vec_r[this_index]
 
     class index_dist:
         def __init__(self, index, dist):
@@ -248,48 +199,6 @@ class Validator(object):
             rst.insert(0, (item.index, item.dist))
         return rst
 
-    # input must contain a pool of pre- or post-projected vecs. return a list of indices and dist. rank an index in a vec_pool from 
-    def rank_index_from(self, vec, vec_pool, index, self_id=None):
-        dist = np.dot(vec, vec_pool[index])
-        rank = 1
-        for i in range(len(vec_pool)):
-            if i == index or i == self_id:
-                continue
-            if dist < np.dot(vec, vec_pool[i]):
-                rank += 1
-        return rank
-
-    def rel_cat_id(self, r):
-        if r in self.relnn:
-            return 3
-        elif r in self.rel1n:
-            return 1
-        elif r in self.reln1:
-            return 2
-        else:
-            return 0
-
-    def dissimilarity(self, h, r, t):
-        h_vec = self.vec_c[h]
-        t_vec = self.vec_c[t]
-        r_vec = self.vec_r[r]
-        return np.dot(r_vec, np.multiply(h_vec, t_vec))
-
-    def dissimilarity2(self, h, r, t):
-        # h_vec = self.vec_c[h]
-        # t_vec = self.vec_c[t]
-        r_vec = self.vec_r[r]
-        return np.dot(r_vec, np.multiply(h, t))
-
-    def get_info(self, triple):
-        """
-        convert the float h, r, t to int, and return
-        :param triple: triple: np.array[4], dtype=np.float64: h,r,t,w
-        :return: h, r, t(index), w(float)
-        """
-        h_, r_, t_, w = triple  # h_, r_, t_: float64
-        return int(h_), int(r_), int(t_), w
-
     def vecs_from_triples(self, h, r, t):
         """
         :param h,r,t: int index
@@ -308,17 +217,6 @@ class Validator(object):
     # Abstract method. Different scoring function for different models.
     def get_score_batch(self, h_batch, r_batch, t_batch, isneg2Dbatch=False):
         raise NotImplementedError("get_score_batch() is not defined in this model's validator")
-
-    def get_bound_score(self, h, r, t):
-        # for most models, just return the original score
-        # may be overwritten by child class
-        return self.get_score(h, r, t)
-
-    def get_bound_score_batch(self, h_batch, r_batch, t_batch, isneg2Dbatch=False):
-        # for non-rect models, just return the original score
-        # rect models will override it
-        return self.get_score_batch(h_batch, r_batch, t_batch, isneg2Dbatch)
-
 
     def get_mse(self, verbose=True, save_dir='', epoch=0):
         test_triples = self.test_triples
@@ -409,38 +307,6 @@ class Validator(object):
     def rel_index2vec_batch(self, indices):
         return np.squeeze(self.vec_r[[indices], :])
 
-    def pred_top_k_tail(self, k, h, r):
-        """
-        Predict top k tail.
-        The #returned items <= k.
-        Consider add tail_pool to limit the range of searching.
-        :param k: how many results to return
-        :param h: index of head
-        :param r: index of relation
-        :return:
-        """
-        q = []  # min heap
-        N = self.vec_c.shape[0]  # the total number of concepts
-        for t_idx in range(N):
-            score = self.get_score(h, r, t_idx)
-            if len(q) < k:
-                HP.heappush(q, self.IndexScore(t_idx, score))
-            else:
-                tmp = q[0]  # smallest score
-                if tmp.score < score:
-                    HP.heapreplace(q, self.IndexScore(t_idx, score))
-
-        indices = np.zeros(len(q), dtype=int)
-        scores = np.ones(len(q), dtype=float)
-        i = len(q) - 1  # largest score first
-        while len(q) > 0:
-            item = HP.heappop(q)
-            indices[i] = item.index
-            scores[i] = item.score
-            i -= 1
-
-        return indices, scores
-
     def get_t_ranks(self, h, r, ts):
         """
         Given some t index, return the ranks for each t
@@ -523,97 +389,6 @@ class Validator(object):
                 res.append((h,r,tw_truth, ndcg, ranks))
 
         return ndcg_sum / count, exp_ndcg_sum / count
-
-
-    def classify_triples(self, confT, plausTs):
-        """
-        Classify high-confidence relation facts
-        :param confT: the threshold of ground truth confidence score
-        :param plausTs: the list of proposed thresholds of computed plausibility score
-        :return:
-        """
-        test_triples = self.test_triples
-
-        h_batch = test_triples[:, 0].astype(int)
-        r_batch = test_triples[:, 1].astype(int)
-        t_batch = test_triples[:, 2].astype(int)
-        w_batch = test_triples[:, 3]
-
-        # ground truth
-        high_gt = set(np.squeeze(np.argwhere(w_batch > confT)))  # positive
-        low_gt = set(np.squeeze(np.argwhere(w_batch <= confT)))  # negative
-
-        P = []
-        R = []
-        Acc = []
-
-        # prediction
-        scores = self.get_score_batch(h_batch, r_batch, t_batch)
-        print('The mean of prediced scores: %f' % np.mean(scores))
-        # pred_thres = np.arange(0, 1, 0.05)
-        for pthres in plausTs:
-
-            high_pred = set(np.squeeze(np.argwhere(scores > pthres)))
-            low_pred = set(np.squeeze(np.argwhere(scores <= pthres)))
-
-            # precision-recall
-            TP = high_gt & high_pred  # union intersection
-            if len(high_pred) == 0:
-                precision = 1
-            else:
-                precision = len(TP) / len(high_pred)
-
-            recall = len(TP) / len(high_gt)
-            P.append(precision)
-            R.append(recall)
-
-            # accuracy
-            TPTN = (len(TP) + len(low_gt & low_pred))
-            accuracy = TPTN / test_triples.shape[0]
-            Acc.append(accuracy)
-
-        P = np.array(P)
-        R = np.array(R)
-        F1 = 2 * np.multiply(P, R) / (P + R)
-        Acc = np.array(Acc)
-
-        return scores, P, R, F1, Acc
-
-
-    def decision_tree_classify(self, confT, train_data):
-        """
-        :param confT: :param confT: the threshold of ground truth confidence score
-        :param train_data: dataframe['v1','relation','v2','w']
-        :return:
-        """
-        # train_data = pd.read_csv(os.path.join(data_dir,'train.tsv'), sep='\t', header=None, names=['v1','relation','v2','w'])
-
-        test_triples = self.test_triples
-
-        # train
-        train_h, train_r, train_t = train_data['v1'].values.astype(int), train_data['relation'].values.astype(int), train_data['v2'].values.astype(int)
-        train_X = self.get_score_batch(train_h, train_r, train_t)[:, np.newaxis]  # feature(2D, n*1)
-        train_Y = train_data['w']>confT  # label (high confidence/not)
-        clf = tree.DecisionTreeClassifier()
-        clf.fit(train_X, train_Y)
-
-        # predict
-        test_triples = self.test_triples
-        test_h, test_r, test_t = test_triples[:, 0].astype(int), test_triples[:, 1].astype(int), test_triples[:, 2].astype(int)
-        test_X = self.get_score_batch(test_h, test_r, test_t)[:, np.newaxis]
-        test_Y_truth = test_triples[:, 3]>confT
-        test_Y_pred = clf.predict(test_X)
-        print('Number of true positive: %d' % np.sum(test_Y_truth))
-        print('Number of predicted positive: %d'%np.sum(test_Y_pred))
-
-
-        precision, recall, F1, _ = sklearn.metrics.precision_recall_fscore_support(test_Y_truth, test_Y_pred)
-        accu = sklearn.metrics.accuracy_score(test_Y_truth, test_Y_pred)
-
-        # P-R curve
-        P, R, thres = sklearn.metrics.precision_recall_curve(test_Y_truth, test_X)
-
-        return test_X, precision, recall, F1, accu, P, R
 
     def get_fixed_hr(self, outputdir=None, n=500):
         hr_map500 = {}
@@ -808,15 +583,6 @@ class UKGE_RECT_VALIDATOR(Validator):
         """
         return np.minimum(np.maximum(scores, 0), 1)
 
-    # override
-    def get_bound_score(self, h, r, t):
-        score = self.get_score(h, r, t)
-        return self.bound_score(score)
-
-    # override
-    def get_bound_score_batch(self, h_batch, r_batch, t_batch, isneg2Dbatch=False):
-        scores = self.get_score_batch(h_batch, r_batch, t_batch, isneg2Dbatch)
-        return self.bound_score(scores)
 
     def get_mse(self, toprint=False, save_dir='', epoch=0):
         test_triples = self.test_triples

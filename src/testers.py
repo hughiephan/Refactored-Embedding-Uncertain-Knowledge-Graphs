@@ -1,35 +1,22 @@
 ''' Module for held-out test.'''
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
+import sys
 import numpy as np
 import tensorflow.compat.v1 as tf
-tf.disable_v2_behavior()
-from numpy import linalg as LA
 import heapq as HP
 import pandas as pd
 import os
-
-from scipy.special import expit as sigmoid
-
-import sys
-
-if '../' not in sys.path:  # src folder
-    sys.path.append('../')
-
-from os.path import join
 import data
 import time
 import pickle
 import random
-
 import sklearn
+from numpy import linalg as LA
+from scipy.special import expit as sigmoid
+from os.path import join
 from sklearn import tree
-
 from src.models import UKGE_logi_TF, UKGE_rect_TF
-
+tf.disable_v2_behavior()
 
 # This class is used to load and combine a TF_Parts and a Data object, and provides some useful methods for training
 class Tester(object):

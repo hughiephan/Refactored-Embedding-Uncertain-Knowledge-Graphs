@@ -21,7 +21,7 @@ If you want to have a precise environment with all the libraries installed, cons
 After each 10 epochs, the model will be saved to `trained_models` folder. To run the experiments, use: 
 
 ```
-python ./run/run.py --data ppi5k --model rect --batch_size 1024 --dim 128 --epoch 100 --reg_scale 5e-4
+python run.py --data ppi5k --model rect --batch_size 1024 --dim 128 --epoch 100 --reg_scale 5e-4
 ```
 
 You can use `--model logi` to switch to the UKGE(logi) model.

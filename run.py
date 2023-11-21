@@ -1,8 +1,6 @@
 """
-Current working directory: Project root dir
-
 === usage
-python run/run.py -m rect --data cn15k --lr 0.01 --batch_size 300
+python run.py -m rect --data cn15k --lr 0.01 --batch_size 300
 """
 
 import sys
@@ -15,13 +13,7 @@ from src.data import Data
 from src.trainer import Trainer
 from src.list import ModelList
 
-def get_model_identifier(model):
-    prefix = model.value
-    now = datetime.datetime.now()
-    date = '%02d%02d' % (now.month, now.day)  # two digits month/day
-    identifier = prefix + '_' + date
-    return identifier
-
+# Commandline
 parser = argparse.ArgumentParser()
 parser.add_argument('--data', type=str, default='ppi5k', help="the dir path where you store data (train.tsv, val.tsv, test.tsv). Default: ppi5k")
 parser.add_argument("--verbose", help="print detailed info for debugging", action="store_true")
@@ -36,7 +28,7 @@ parser.add_argument('--models_dir', type=str, default='./trained_models', help="
 parser.add_argument('--reg_scale', type=float, default=0.0005, help="The scale for regularizer (lambda). Default 0.0005") # Regularizer coefficient (lambda)
 args = parser.parse_args()
 
-# parameters
+# Parameters
 param.verbose = args.verbose
 param.data = args.data
 param.model = ModelList(args.model)
@@ -48,30 +40,30 @@ param.dim = args.dim  # default 128
 param.neg_per_pos = args.n_neg  # Number of negative samples per (h,r,t). default 10.
 param.reg_scale = args.reg_scale
 
-# path to save
-identifier = get_model_identifier(param.model)
-save_dir = join(args.models_dir, param.data, identifier)  # the directory where we store this model
+# Configure path to save model
+now = datetime.datetime.now()
+date = '%02d%02d' % (now.month, now.day) # Two digits month/day
+identifier = param.model.value + '_' + date
+save_dir = join(args.models_dir, param.data, identifier)  # The directory where we store this model
 if not os.path.exists(save_dir):
     os.makedirs(save_dir)
 print('Trained models will be stored in: ', save_dir)
 
-# input files
+# Load data
 data_dir = join('./data', args.data)
 file_train = join(data_dir, 'train.tsv')  # training data
-file_val = join(data_dir, 'val.tsv')  # validation datan
+file_val = join(data_dir, 'val.tsv')  # validation data
 file_psl = join(data_dir, 'softlogic.tsv')  # probabilistic soft logic
 print('file_psl: %s' % file_psl)
 more_filt = [file_val, join(data_dir, 'test.tsv')]
 print('Read train.tsv from', data_dir)
-
-# load data
 this_data = Data()
 this_data.load_data(file_train=file_train, file_val=file_val, file_psl=file_psl)
 for f in more_filt:
     this_data.record_more_data(f)
 this_data.save_meta_table(save_dir)  # output: idx_concept.csv, idx_relation.csv
 
-# Trainer
-m_train = Trainer()
-m_train.build(this_data, save_dir)
-ht_embedding, r_embedding = m_train.train(epochs=param.n_epoch, save_every_epoch=param.val_save_freq, lr=param.learning_rate, data_dir=param.data_dir()) 
+# Start training
+trainer = Trainer()
+trainer.build(this_data, save_dir)
+ht_embedding, r_embedding = trainer.train(epochs=param.n_epoch, save_every_epoch=param.val_save_freq, lr=param.learning_rate, data_dir=param.data_dir()) 

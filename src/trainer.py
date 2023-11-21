@@ -10,7 +10,7 @@ from src import param
 from src.data import BatchLoader
 from src.utils import vec_length, ModelList
 from src.model import UKGE_LOGI, UKGE_RECT
-from src.validator import UKGE_logi_Validator, UKGE_rect_Validator
+from src.validator import UKGE_LOGI_VALIDATOR, UKGE_RECT_VALIDATOR
 tf.disable_v2_behavior()
 
 class Trainer(object):
@@ -69,7 +69,7 @@ class Trainer(object):
                 neg_per_positive=self.neg_per_positive, 
                 p_neg=self.p_neg
             )
-            self.validator = UKGE_logi_Validator()
+            self.validator = UKGE_LOGI_VALIDATOR()
         elif self.model == ModelList.RECT:
             self.tf_parts = UKGE_RECT(
                 num_rels=self.this_data.num_rels(),
@@ -80,7 +80,7 @@ class Trainer(object):
                 p_neg=self.p_neg, 
                 reg_scale=self.reg_scale
             )
-            self.validator = UKGE_rect_Validator()
+            self.validator = UKGE_RECT_VALIDATOR()
 
     def gen_batch(self, forever=False, shuffle=True, negsampler=None):
         """
@@ -175,8 +175,6 @@ class Trainer(object):
             hr_map200 = self.validator.hr_map_sub
 
         mean_ndcg, mean_exp_ndcg = self.validator.mean_ndcg(hr_map200)
-
-        # metrics: mse
         mse = self.validator.get_mse(save_dir=self.save_dir, epoch=epoch, toprint=self.verbose)
         mse_neg = self.validator.get_mse_neg(self.neg_per_positive)
         return mse, mse_neg, mean_ndcg, mean_exp_ndcg

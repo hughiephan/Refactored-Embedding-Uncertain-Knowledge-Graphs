@@ -1,5 +1,9 @@
 # Prerequisite Knowledge
 
+## tf.global_variables_initializer
+
+TBD
+
 ## tf.train.Saver
 
 TBD

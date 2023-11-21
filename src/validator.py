@@ -656,7 +656,7 @@ class Validator(object):
 
 
 
-class UKGE_logi_Validator(Validator):
+class UKGE_LOGI_VALIDATOR(Validator):
     def __init__(self, ):
         Validator.__init__(self)
 
@@ -724,7 +724,7 @@ class UKGE_logi_Validator(Validator):
         return sigmoid(self.w*np.sum(np.multiply(np.multiply(hvecs, tvecs), rvecs), axis=axis)+self.b)
 
 
-class UKGE_rect_Validator(Validator):
+class UKGE_RECT_VALIDATOR(Validator):
     def __init__(self, ):
         Validator.__init__(self)
 

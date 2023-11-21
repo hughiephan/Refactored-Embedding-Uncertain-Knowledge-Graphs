@@ -15,8 +15,8 @@ from src.data import Data
 from src.trainer import Trainer
 from src.list import ModelList
 
-def get_model_identifier(whichmodel):
-    prefix = whichmodel.value
+def get_model_identifier(model):
+    prefix = model.value
     now = datetime.datetime.now()
     date = '%02d%02d' % (now.month, now.day)  # two digits month/day
     identifier = prefix + '_' + date
@@ -39,7 +39,7 @@ args = parser.parse_args()
 # parameters
 param.verbose = args.verbose
 param.whichdata = args.data
-param.whichmodel = ModelList(args.model)
+param.model = ModelList(args.model)
 param.n_epoch = args.epoch
 param.learning_rate = args.lr
 param.batch_size = args.batch_size
@@ -49,7 +49,7 @@ param.neg_per_pos = args.n_neg  # Number of negative samples per (h,r,t). defaul
 param.reg_scale = args.reg_scale
 
 # path to save
-identifier = get_model_identifier(param.whichmodel)
+identifier = get_model_identifier(param.model)
 save_dir = join(args.models_dir, param.whichdata, identifier)  # the directory where we store this model
 if not os.path.exists(save_dir):
     os.makedirs(save_dir)

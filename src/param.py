@@ -5,7 +5,7 @@ from os.path import join
 
 verbose = False
 whichdata = None
-whichmodel = None
+model = None
 n_epoch = 100
 learning_rate = 0.01
 batch_size = 1024
@@ -25,7 +25,7 @@ def data_dir():
     return join('./data', whichdata)
 
 def description():
-    str = 'model:%s, batch size:%d, lr:%f, lambda:%f, dim:%d, n_neg:%f, p_neg:%f, p_psl:%f, n_psl:%d, prior_psl:%f' % (whichmodel,batch_size,
+    str = 'model:%s, batch size:%d, lr:%f, lambda:%f, dim:%d, n_neg:%f, p_neg:%f, p_psl:%f, n_psl:%d, prior_psl:%f' % (model,batch_size,
                                                                                          learning_rate, reg_scale, dim,
                                                                                          neg_per_pos, p_neg, p_psl,
                                                                                          n_psl, prior_psl)

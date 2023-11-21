@@ -70,9 +70,9 @@ class Trainer(object):
         self.train_loss_path = join(save_dir, 'trainig_loss.csv')
         self.val_loss_path = join(save_dir, 'val_loss.csv')
 
-        print('Now using model: ', param.whichmodel)
+        print('Now using model: ', param.model)
 
-        self.whichmodel = param.whichmodel
+        self.model = param.model
 
         self.build_tf_parts()  # could be overrided
 
@@ -82,7 +82,7 @@ class Trainer(object):
         Different for every model.
         :return:
         """
-        if self.whichmodel == ModelList.LOGI:
+        if self.model == ModelList.LOGI:
             self.tf_parts = UKGE_logi_TF(num_rels=self.this_data.num_rels(),
                                          num_cons=self.this_data.num_cons(),
                                          dim=self.dim,
@@ -90,7 +90,7 @@ class Trainer(object):
                                          neg_per_positive=self.neg_per_positive, p_neg=self.p_neg)
             self.validator = UKGE_logi_Tester()
 
-        elif self.whichmodel == ModelList.RECT:
+        elif self.model == ModelList.RECT:
             self.tf_parts = UKGE_rect_TF(num_rels=self.this_data.num_rels(),
                                          num_cons=self.this_data.num_cons(),
                                          dim=self.dim,

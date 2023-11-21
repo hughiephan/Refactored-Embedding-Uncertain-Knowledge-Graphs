@@ -1,5 +1,13 @@
 # Prerequisite Knowledge
 
+## tf.train.Saver
+
+TBD
+
+## TF Parts
+
+TBD
+
 ## TF Variable Scope
 
 Variable sharing is a mechanism in TensorFlow that allows for sharing variables accessed in different parts of the code without passing references to the variable around. `tf.variable_scope()` manages namespaces for names passed to `tf.get_variable()`.

@@ -165,14 +165,11 @@ class Trainer(object):
         sess.close()
         return ht_embeddings, r_embeddings
 
-    def get_val_loss(self, epoch, sess):
-        # validation error
-
+    def get_val_loss(self, epoch, sess): # validation error
         self.validator.build_by_var(self.this_data.val_triples, self.tf_parts, self.this_data, sess=sess)
 
         if not hasattr(self.validator, 'hr_map'):
-            self.validator.load_hr_map(param.data_dir(), 'test.tsv', ['train.tsv', 'val.tsv',
-                                                                          'test.tsv'])
+            self.validator.load_hr_map(param.data_dir(), 'test.tsv', ['train.tsv', 'val.tsv', 'test.tsv'])
         if not hasattr(self.validator, 'hr_map_sub'):
             hr_map200 = self.validator.get_fixed_hr(n=200)  # use smaller size for faster validation
         else:

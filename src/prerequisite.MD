@@ -1,5 +1,9 @@
 # Prerequisite Knowledge
 
+## TF Embedding Lookup
+
+TBD
+
 ## TF1.0 Placeholder
 
 Normally we run like this to start training 

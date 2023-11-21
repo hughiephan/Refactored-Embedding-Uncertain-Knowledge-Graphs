@@ -1,26 +1,19 @@
 """Processing of data."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 import numpy as np
 import pickle
 import pandas as pd
 from os.path import join
-
 from src import param
 
-
 class Data(object):
-    '''The abustrct class that defines interfaces for holding all data.
+    '''The abstract class that defines interfaces for holding all data.
     '''
 
     def __init__(self):
-        # concept vocab
-        self.cons = []
-        # rel vocab
-        self.rels = []
-        # transitive rels vocab
+        self.cons = [] # Concept vocab
+        self.rels = [] # Relation vocab
+        # Transitive rels vocab
         self.index_cons = {}  # {string: index}
         self.index_rels = {}  # {string: index}
         # save triples as array of indices

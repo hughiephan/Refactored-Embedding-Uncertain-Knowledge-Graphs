@@ -1,30 +1,18 @@
 ''' Module for training TF parts.'''
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 import pandas as pd
-from os.path import join
-
-from src import param
-
 import sys
-
-if '../src' not in sys.path:
-    sys.path.append('../src')
-
 import numpy as np
 import tensorflow.compat.v1 as tf
-tf.disable_v2_behavior()
 import time
+from os.path import join
+from src import param
 from src.data import BatchLoader
-
 from src.utils import vec_length
 from src.list import ModelList
 from src.models import UKGE_logi_TF, UKGE_rect_TF
 from src.testers import UKGE_logi_Tester, UKGE_rect_Tester
-
-
+tf.disable_v2_behavior()
 
 class Trainer(object):
     def __init__(self):

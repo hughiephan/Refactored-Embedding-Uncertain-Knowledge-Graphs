@@ -2,7 +2,7 @@
 Current working directory: Project root dir
 
 === usage
-python run/run.py -m DM --data cn15k --lr 0.01 --batch_size 300
+python run/run.py -m rect --data cn15k --lr 0.01 --batch_size 300
 """
 
 from __future__ import absolute_import

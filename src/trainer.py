@@ -230,6 +230,8 @@ class Trainer(object):
 
             # With 
             # A_loss: Main Loss + PSL Loss
+            # mse_pos: MSE on Positive samples
+            # mse_neg: MSE on Negative samples
             _, gradient, batch_loss, psl_mse, mse_pos, mse_neg, main_loss, psl_prob, psl_mse_each, rule_prior = sess.run(
                 [self.tf_parts._train_op, self.tf_parts._gradient,
                  self.tf_parts._A_loss, self.tf_parts.psl_mse, self.tf_parts._f_score_h, self.tf_parts._f_score_hn,

@@ -74,7 +74,4 @@ this_data.save_meta_table(save_dir)  # output: idx_concept.csv, idx_relation.csv
 # Trainer
 m_train = Trainer()
 m_train.build(this_data, save_dir)
-ht_embedding, r_embedding = m_train.train(epochs=param.n_epoch, 
-                                          save_every_epoch=param.val_save_freq,
-                                          lr=param.learning_rate,
-                                          data_dir=param.data_dir()) 
+ht_embedding, r_embedding = m_train.train(epochs=param.n_epoch, save_every_epoch=param.val_save_freq, lr=param.learning_rate, data_dir=param.data_dir()) 

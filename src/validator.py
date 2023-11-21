@@ -15,11 +15,11 @@ from numpy import linalg as LA
 from scipy.special import expit as sigmoid
 from os.path import join
 from sklearn import tree
-from src.models import UKGE_logi_TF, UKGE_rect_TF
+from src.model import UKGE_logi_TF, UKGE_rect_TF
 tf.disable_v2_behavior()
 
 # This class is used to load and combine a TF_Parts and a Data object, and provides some useful methods for training
-class Tester(object):
+class Validator(object):
     class IndexScore:
         """
         The score of a tail when h and r is given.
@@ -64,7 +64,7 @@ class Tester(object):
 
     # abstract method
     def build_by_var(self, test_data, tf_model, this_data, sess):
-        raise NotImplementedError("Fatal Error: This model' tester didn't implement its build_by_var() function!")
+        raise NotImplementedError("Fatal Error: This model' validator didn't implement its build_by_var() function!")
 
     def build_by_pickle(self, test_data_file, model_dir, data_filename, pickle_file, loadComplEx=False):
         """
@@ -136,7 +136,7 @@ class Tester(object):
         :return:
         """
         if self.hr_map is None:
-            raise ValueError("Tester.hr_map hasn't been loaded! Use Tester.load_hr_map() to load it.")
+            raise ValueError("Validator.hr_map hasn't been loaded! Use Validator.load_hr_map() to load it.")
 
         with open(outputfile, 'w') as f:
             for h in self.hr_map:
@@ -303,11 +303,11 @@ class Tester(object):
 
     # Abstract method. Different scoring function for different models.
     def get_score(self, h, r, t):
-        raise NotImplementedError("get_score() is not defined in this model's tester")
+        raise NotImplementedError("get_score() is not defined in this model's validator")
 
     # Abstract method. Different scoring function for different models.
     def get_score_batch(self, h_batch, r_batch, t_batch, isneg2Dbatch=False):
-        raise NotImplementedError("get_score_batch() is not defined in this model's tester")
+        raise NotImplementedError("get_score_batch() is not defined in this model's validator")
 
     def get_bound_score(self, h, r, t):
         # for most models, just return the original score
@@ -656,9 +656,9 @@ class Tester(object):
 
 
 
-class UKGE_logi_Tester(Tester):
+class UKGE_logi_Validator(Validator):
     def __init__(self, ):
-        Tester.__init__(self)
+        Validator.__init__(self)
 
     # override
     def build_by_file(self, test_data_file, model_dir, model_filename='model.bin', data_filename='data.bin'):
@@ -667,7 +667,7 @@ class UKGE_logi_Tester(Tester):
         get self.vec_c (vectors for concepts), and self.vec_r(vectors for relations)
         :return:
         """
-        Tester.build_by_file(self, test_data_file, model_dir, model_filename,
+        Validator.build_by_file(self, test_data_file, model_dir, model_filename,
                              data_filename)
 
         # load tf model and embeddings
@@ -724,9 +724,9 @@ class UKGE_logi_Tester(Tester):
         return sigmoid(self.w*np.sum(np.multiply(np.multiply(hvecs, tvecs), rvecs), axis=axis)+self.b)
 
 
-class UKGE_rect_Tester(Tester):
+class UKGE_rect_Validator(Validator):
     def __init__(self, ):
-        Tester.__init__(self)
+        Validator.__init__(self)
 
     # override
     def build_by_file(self, test_data_file, model_dir, model_filename='model.bin',
@@ -737,8 +737,8 @@ class UKGE_rect_Tester(Tester):
         :return:
         """
 
-        # grandparent class: Tester
-        Tester.build_by_file(self, test_data_file, model_dir, model_filename, data_filename)
+        # grandparent class: Validator
+        Validator.build_by_file(self, test_data_file, model_dir, model_filename, data_filename)
 
         # load tf model and embeddings
         model_save_path = join(model_dir, model_filename)

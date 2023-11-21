@@ -10,8 +10,8 @@ from src import param
 from src.data import BatchLoader
 from src.utils import vec_length
 from src.list import ModelList
-from src.models import UKGE_logi_TF, UKGE_rect_TF
-from src.testers import UKGE_logi_Tester, UKGE_rect_Tester
+from src.model import UKGE_logi_TF, UKGE_rect_TF
+from src.validator import UKGE_logi_Validator, UKGE_rect_Validator
 tf.disable_v2_behavior()
 
 class Trainer(object):
@@ -55,38 +55,33 @@ class Trainer(object):
         self.save_dir = save_dir
         self.save_path = join(save_dir, model_save)  # tf model
         self.data_save_path = join(save_dir, data_save)  # this_data (Data())
-        self.train_loss_path = join(save_dir, 'trainig_loss.csv')
+        self.train_loss_path = join(save_dir, 'training_loss.csv')
         self.val_loss_path = join(save_dir, 'val_loss.csv')
 
         print('Now using model: ', param.model)
 
         self.model = param.model
-
-        self.build_tf_parts()  # could be overrided
-
-    def build_tf_parts(self):
-        """
-        Build tfparts (model) and validator.
-        Different for every model.
-        :return:
-        """
         if self.model == ModelList.LOGI:
-            self.tf_parts = UKGE_logi_TF(num_rels=self.this_data.num_rels(),
-                                         num_cons=self.this_data.num_cons(),
-                                         dim=self.dim,
-                                         batch_size=self.batch_size,
-                                         neg_per_positive=self.neg_per_positive, p_neg=self.p_neg)
-            self.validator = UKGE_logi_Tester()
-
+            self.tf_parts = UKGE_logi_TF(
+                num_rels=self.this_data.num_rels(),
+                num_cons=self.this_data.num_cons(),
+                dim=self.dim,
+                batch_size=self.batch_size,
+                neg_per_positive=self.neg_per_positive, 
+                p_neg=self.p_neg
+            )
+            self.validator = UKGE_logi_Validator()
         elif self.model == ModelList.RECT:
-            self.tf_parts = UKGE_rect_TF(num_rels=self.this_data.num_rels(),
-                                         num_cons=self.this_data.num_cons(),
-                                         dim=self.dim,
-                                         batch_size=self.batch_size,
-                                         neg_per_positive=self.neg_per_positive, p_neg=self.p_neg, reg_scale=self.reg_scale)
-            self.validator = UKGE_rect_Tester()
-
-
+            self.tf_parts = UKGE_rect_TF(
+                num_rels=self.this_data.num_rels(),
+                num_cons=self.this_data.num_cons(),
+                dim=self.dim,
+                batch_size=self.batch_size,
+                neg_per_positive=self.neg_per_positive, 
+                p_neg=self.p_neg, 
+                reg_scale=self.reg_scale
+            )
+            self.validator = UKGE_rect_Validator()
 
     def gen_batch(self, forever=False, shuffle=True, negsampler=None):
         """
@@ -135,7 +130,6 @@ class Trainer(object):
 
         num_batch = self.this_data.triples.shape[0] // self.batch_size
         print('Number of batches per epoch: %d' % num_batch)
-
 
         train_losses = []  # [[every epoch, loss]]
         val_losses = []  # [[saver epoch, loss]]
@@ -198,18 +192,12 @@ class Trainer(object):
 
     def train1epoch(self, sess, num_batch, lr, epoch):
         batch_time = 0
-
         epoch_batches = self.batchloader.gen_batch(forever=True)
-
         epoch_loss = []
 
         for batch_id in range(num_batch):
-
             batch = next(epoch_batches)
-            A_h_index, A_r_index, A_t_index, A_w, \
-            A_neg_hn_index, A_neg_rel_hn_index, \
-            A_neg_t_index, A_neg_h_index, A_neg_rel_tn_index, A_neg_tn_index = batch
-
+            A_h_index, A_r_index, A_t_index, A_w, A_neg_hn_index, A_neg_rel_hn_index, A_neg_t_index, A_neg_h_index, A_neg_rel_tn_index, A_neg_tn_index = batch
             time00 = time.time()
             soft_h_index, soft_r_index, soft_t_index, soft_w_index = self.batchloader.gen_psl_samples()  # length: param.n_psl
             batch_time += time.time() - time00
@@ -218,34 +206,41 @@ class Trainer(object):
             # mse_pos: MSE on Positive samples
             # mse_neg: MSE on Negative samples
             _, gradient, batch_loss, psl_mse, mse_pos, mse_neg, main_loss, psl_prob, psl_mse_each, rule_prior = sess.run(
-                [self.tf_parts._train_op, self.tf_parts._gradient,
-                 self.tf_parts._A_loss, self.tf_parts.psl_mse, self.tf_parts._f_score_h, self.tf_parts._f_score_hn,
-                 self.tf_parts.main_loss, self.tf_parts.psl_prob, self.tf_parts.psl_error_each,
-                 self.tf_parts.prior_psl0],
-                feed_dict={self.tf_parts._A_h_index: A_h_index,
-                           self.tf_parts._A_r_index: A_r_index,
-                           self.tf_parts._A_t_index: A_t_index,
-                           self.tf_parts._A_w: A_w,
-                           self.tf_parts._A_neg_hn_index: A_neg_hn_index,
-                           self.tf_parts._A_neg_rel_hn_index: A_neg_rel_hn_index,
-                           self.tf_parts._A_neg_t_index: A_neg_t_index,
-                           self.tf_parts._A_neg_h_index: A_neg_h_index,
-                           self.tf_parts._A_neg_rel_tn_index: A_neg_rel_tn_index,
-                           self.tf_parts._A_neg_tn_index: A_neg_tn_index,
-                           self.tf_parts._soft_h_index: soft_h_index,
-                           self.tf_parts._soft_r_index: soft_r_index,
-                           self.tf_parts._soft_t_index: soft_t_index,
-                           self.tf_parts._soft_w: soft_w_index, 
-                           self.tf_parts._lr: lr # Learning Rate
-                           })
+                [
+                    self.tf_parts._train_op, 
+                    self.tf_parts._gradient,
+                    self.tf_parts._A_loss, 
+                    self.tf_parts.psl_mse, 
+                    self.tf_parts._f_score_h, 
+                    self.tf_parts._f_score_hn,
+                    self.tf_parts.main_loss, 
+                    self.tf_parts.psl_prob, 
+                    self.tf_parts.psl_error_each,
+                    self.tf_parts.prior_psl0
+                ],
+                feed_dict={
+                    self.tf_parts._A_h_index: A_h_index,
+                    self.tf_parts._A_r_index: A_r_index,
+                    self.tf_parts._A_t_index: A_t_index,
+                    self.tf_parts._A_w: A_w,
+                    self.tf_parts._A_neg_hn_index: A_neg_hn_index,
+                    self.tf_parts._A_neg_rel_hn_index: A_neg_rel_hn_index,
+                    self.tf_parts._A_neg_t_index: A_neg_t_index,
+                    self.tf_parts._A_neg_h_index: A_neg_h_index,
+                    self.tf_parts._A_neg_rel_tn_index: A_neg_rel_tn_index,
+                    self.tf_parts._A_neg_tn_index: A_neg_tn_index,
+                    self.tf_parts._soft_h_index: soft_h_index,
+                    self.tf_parts._soft_r_index: soft_r_index,
+                    self.tf_parts._soft_t_index: soft_t_index,
+                    self.tf_parts._soft_w: soft_w_index, 
+                    self.tf_parts._lr: lr # Learning Rate
+                })
             param.prior_psl = rule_prior
             epoch_loss.append(batch_loss)
-
             if ((batch_id + 1) % 50 == 0) or batch_id == num_batch - 1:
                 print('process: %d / %d. Epoch %d' % (batch_id + 1, num_batch, epoch))
 
         this_total_loss = np.sum(epoch_loss) / len(epoch_loss)
         print("Loss of epoch %d = %s" % (epoch, np.sum(this_total_loss)))
         # print('MSE on positive instances: %f, MSE on negative samples: %f' % (np.mean(mse_pos), np.mean(mse_neg)))
-
         return this_total_loss

@@ -25,8 +25,5 @@ def data_dir():
     return join('./data', data)
 
 def description():
-    str = 'model:%s, batch size:%d, lr:%f, lambda:%f, dim:%d, n_neg:%f, p_neg:%f, p_psl:%f, n_psl:%d, prior_psl:%f' % (model,batch_size,
-                                                                                         learning_rate, reg_scale, dim,
-                                                                                         neg_per_pos, p_neg, p_psl,
-                                                                                         n_psl, prior_psl)
+    str = 'model:%s, batch size:%d, lr:%f, lambda:%f, dim:%d, n_neg:%f, p_neg:%f, p_psl:%f, n_psl:%d, prior_psl:%f' % (model,batch_size, learning_rate, reg_scale, dim, neg_per_pos, p_neg, p_psl, n_psl, prior_psl)
     return str

@@ -228,6 +228,8 @@ class Trainer(object):
             soft_h_index, soft_r_index, soft_t_index, soft_w_index = self.batchloader.gen_psl_samples()  # length: param.n_psl
             batch_time += time.time() - time00
 
+            # With 
+            # A_loss: Main Loss + PSL Loss
             _, gradient, batch_loss, psl_mse, mse_pos, mse_neg, main_loss, psl_prob, psl_mse_each, rule_prior = sess.run(
                 [self.tf_parts._train_op, self.tf_parts._gradient,
                  self.tf_parts._A_loss, self.tf_parts.psl_mse, self.tf_parts._f_score_h, self.tf_parts._f_score_hn,
@@ -246,8 +248,8 @@ class Trainer(object):
                            self.tf_parts._soft_h_index: soft_h_index,
                            self.tf_parts._soft_r_index: soft_r_index,
                            self.tf_parts._soft_t_index: soft_t_index,
-                           self.tf_parts._soft_w: soft_w_index,
-                           self.tf_parts._lr: lr
+                           self.tf_parts._soft_w: soft_w_index, 
+                           self.tf_parts._lr: lr # Learning Rate
                            })
             param.prior_psl = rule_prior
             epoch_loss.append(batch_loss)

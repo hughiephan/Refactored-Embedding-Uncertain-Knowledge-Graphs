@@ -1,11 +1,12 @@
 """
-Vector-related computing for debugging and testing.
+Utilities / Helper Functions
 """
 
 import numpy as np
 import time
 from numpy import linalg as LA
 from sklearn.neighbors import NearestNeighbors
+from enum import Enum
 
 def vec_length(vec):
     return LA.norm(vec)
@@ -30,3 +31,9 @@ class IndexScore:
 
     def __str__(self):
         return "(index: %d, score:%.3f)" % (self.index, self.score)
+
+class ModelList(Enum):
+    LOGI = "logi"
+    RECT = "rect"
+
+

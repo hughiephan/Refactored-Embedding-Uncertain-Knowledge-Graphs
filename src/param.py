@@ -1,8 +1,6 @@
-# definition of hyperparameters
-# set by arguments of training
-
 from os.path import join
 
+# Hyperparameters
 verbose = False
 data = None
 model = None

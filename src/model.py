@@ -2,7 +2,6 @@
 Tensorflow related part
 """
 
-from src import param
 import tensorflow.compat.v1 as tf
 tf.disable_v2_behavior()
 

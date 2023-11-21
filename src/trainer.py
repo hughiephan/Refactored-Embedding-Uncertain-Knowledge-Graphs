@@ -8,8 +8,7 @@ import time
 from os.path import join
 from src import param
 from src.data import BatchLoader
-from src.utils import vec_length
-from src.list import ModelList
+from src.utils import vec_length, ModelList
 from src.model import UKGE_logi_TF, UKGE_rect_TF
 from src.validator import UKGE_logi_Validator, UKGE_rect_Validator
 tf.disable_v2_behavior()

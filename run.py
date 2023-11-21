@@ -11,7 +11,7 @@ from os.path import join
 from src import param
 from src.data import Data
 from src.trainer import Trainer
-from src.list import ModelList
+from src.utils import ModelList
 
 # Commandline
 parser = argparse.ArgumentParser()

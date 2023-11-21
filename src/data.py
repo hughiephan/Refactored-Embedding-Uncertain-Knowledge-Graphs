@@ -238,8 +238,6 @@ class BatchLoader():
         soft_sample_batch = (soft_h, soft_r, soft_t, soft_lb)
         return soft_sample_batch
 
-
-
     def gen_batch(self, forever=False, shuffle=True, negsampler=None):
         """
         :param ht_embedding: for kNN negative sampling

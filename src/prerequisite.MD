@@ -21,4 +21,4 @@ with tf.Session() as sess:
 ```
 
 ## Reference
-- 
+- https://stackoverflow.com/questions/50497724/tensorflow-when-should-i-use-or-not-use-feed-dict

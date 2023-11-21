@@ -13,18 +13,21 @@ class TFParts(object):
     '''
 
     def __init__(self, num_rels, num_cons, dim, batch_size, neg_per_positive, p_neg):
-        self._num_rels = num_rels
-        self._num_cons = num_cons
-        self._dim = dim  # dimension of both relation and ontology.
-        self._batch_size = batch_size
-        self._neg_per_positive = neg_per_positive
-        self._epoch_loss = 0
+        '''
+        Initialize the variables
+        '''
+        self._num_rels = num_rels # Number of relations
+        self._num_cons = num_cons # Number of ontologies
+        self._dim = dim  # Dimension of both relation and ontology.
+        self._neg_per_positive = neg_per_positive # Number of negative samples per (h,r,t)
+        self._p_psl = 0.2 # Coefficient
         self._p_neg = 1
-        self._p_psl = 0.2
+        self._batch_size = batch_size
+        self._epoch_loss = 0 
         self._soft_size = 1
         self._prior_psl = 0
 
-    def build_basics(self):
+    def build(self):
         tf.reset_default_graph()
         with tf.variable_scope("graph", initializer=tf.truncated_normal_initializer(0, 0.3)):
             # Variables (matrix of embeddings/transformations)
@@ -32,12 +35,10 @@ class TFParts(object):
                 name='ht',  # for t AND h
                 shape=[self.num_cons, self.dim],
                 dtype=tf.float32)
-
             self._r = r = tf.get_variable(
                 name='r',
                 shape=[self.num_rels, self.dim],
                 dtype=tf.float32)
-
             self._A_h_index = A_h_index = tf.placeholder(
                 dtype=tf.int64,
                 shape=[self.batch_size],
@@ -50,13 +51,11 @@ class TFParts(object):
                 dtype=tf.int64,
                 shape=[self.batch_size],
                 name='A_t_index')
-
             # for uncertain graph
             self._A_w = tf.placeholder(
                 dtype=tf.float32,
                 shape=[self.batch_size],
                 name='_A_w')
-
             self._A_neg_hn_index = A_neg_hn_index = tf.placeholder(
                 dtype=tf.int64,
                 shape=(self.batch_size, self._neg_per_positive),
@@ -81,19 +80,16 @@ class TFParts(object):
                 dtype=tf.int64,
                 shape=(self.batch_size, self._neg_per_positive),
                 name='A_neg_tn_index')
-
             # no normalization
             self._h_batch = tf.nn.embedding_lookup(ht, A_h_index)
             self._t_batch = tf.nn.embedding_lookup(ht, A_t_index)
             self._r_batch = tf.nn.embedding_lookup(r, A_r_index)
-
             self._neg_hn_con_batch = tf.nn.embedding_lookup(ht, A_neg_hn_index)
             self._neg_rel_hn_batch = tf.nn.embedding_lookup(r, A_neg_rel_hn_index)
             self._neg_t_con_batch = tf.nn.embedding_lookup(ht, A_neg_t_index)
             self._neg_h_con_batch = tf.nn.embedding_lookup(ht, A_neg_h_index)
             self._neg_rel_tn_batch = tf.nn.embedding_lookup(r, A_neg_rel_tn_index)
             self._neg_tn_con_batch = tf.nn.embedding_lookup(ht, A_neg_tn_index)
-
             # psl batches
             self._soft_h_index = tf.placeholder(
                 dtype=tf.int64,
@@ -107,39 +103,25 @@ class TFParts(object):
                 dtype=tf.int64,
                 shape=[self._soft_size],
                 name='soft_t_index')
-
             # for uncertain graph and psl
             self._soft_w = tf.placeholder(
                 dtype=tf.float32,
                 shape=[self._soft_size],
                 name='soft_w_lower_bound')
-
             self._soft_h_batch = tf.nn.embedding_lookup(ht, self._soft_h_index)
             self._soft_t_batch = tf.nn.embedding_lookup(ht, self._soft_t_index)
             self._soft_r_batch = tf.nn.embedding_lookup(r, self._soft_r_index)
 
-
-    def build_optimizer(self):
-        self._A_loss = tf.add(self.main_loss, self.psl_loss)
+        self.define_main_loss()  # Abstract method to be overriden
+        self.define_psl_loss()  # Abstract method to be overriden
 
         # Optimizer
+        self._A_loss = tf.add(self.main_loss, self.psl_loss)
         self._lr = lr = tf.placeholder(tf.float32)
         self._opt = opt = tf.train.AdamOptimizer(lr)
-
-        # This can be replaced by
-        # self._train_op_A = train_op_A = opt.minimize(A_loss)
-        self._gradient = gradient = opt.compute_gradients(self._A_loss)  # splitted for debugging
-
+        self._gradient = gradient = opt.compute_gradients(self._A_loss) 
         self._train_op = opt.apply_gradients(gradient)
-
-        # Saver
         self._saver = tf.train.Saver(max_to_keep=2)
-
-    def build(self):
-        self.build_basics()
-        self.define_main_loss()  # abstract method. get self.main_loss
-        self.define_psl_loss()  # abstract method. get self.psl_loss
-        self.build_optimizer()
 
     def compute_psl_loss(self):
         self.prior_psl0 = tf.constant(self._prior_psl, tf.float32)
@@ -173,10 +155,10 @@ class UKGE_logi_TF(TFParts):
         TFParts.__init__(self, num_rels, num_cons, dim, batch_size, neg_per_positive, p_neg)
         self.build()
 
+    # Override abstract method
     def define_main_loss(self):
         # distmult on uncertain graph
         print('define main loss')
-
         self.w = tf.Variable(0.0, name="weights")
         self.b = tf.Variable(0.0, name="bias")
 
@@ -202,6 +184,7 @@ class UKGE_logi_TF(TFParts):
         self.main_loss = (tf.reduce_sum(
             tf.add(tf.divide(tf.add(f_score_tn, f_score_hn), 2) * self._p_neg, f_score_h))) / self._batch_size
 
+    # Override abstract method
     def define_psl_loss(self):
         self.psl_prob = tf.sigmoid(self.w*tf.reduce_sum(
             tf.multiply(self._soft_r_batch,
@@ -216,8 +199,8 @@ class UKGE_rect_TF(TFParts):
         self.reg_scale = reg_scale
         self.build()
 
-    # override
-    def define_main_loss(self):
+    # Override abstract method
+    def define_main_loss(self): 
         self.w = tf.Variable(0.0, name="weights")
         self.b = tf.Variable(0.0, name="bias")
 
@@ -251,8 +234,8 @@ class UKGE_rect_TF(TFParts):
 
         self.main_loss = tf.add(this_loss, self.reg_scale * regularizer)
 
-    # override
-    def define_psl_loss(self):
+    # Override abstract method
+    def define_psl_loss(self): 
         self.psl_prob = self.w * tf.reduce_sum(
             tf.multiply(self._soft_r_batch,
                         tf.multiply(self._soft_h_batch, self._soft_t_batch)),

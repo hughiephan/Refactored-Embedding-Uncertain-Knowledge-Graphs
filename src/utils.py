@@ -3,14 +3,12 @@ Vector-related computing for debugging and testing.
 """
 
 import numpy as np
+import time
 from numpy import linalg as LA
 from sklearn.neighbors import NearestNeighbors
-import time
-
 
 def vec_length(vec):
     return LA.norm(vec)
-
 
 class IndexScore:
     """

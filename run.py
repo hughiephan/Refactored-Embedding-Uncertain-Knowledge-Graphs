@@ -38,7 +38,7 @@ args = parser.parse_args()
 
 # parameters
 param.verbose = args.verbose
-param.whichdata = args.data
+param.data = args.data
 param.model = ModelList(args.model)
 param.n_epoch = args.epoch
 param.learning_rate = args.lr
@@ -50,7 +50,7 @@ param.reg_scale = args.reg_scale
 
 # path to save
 identifier = get_model_identifier(param.model)
-save_dir = join(args.models_dir, param.whichdata, identifier)  # the directory where we store this model
+save_dir = join(args.models_dir, param.data, identifier)  # the directory where we store this model
 if not os.path.exists(save_dir):
     os.makedirs(save_dir)
 print('Trained models will be stored in: ', save_dir)

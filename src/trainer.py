@@ -156,14 +156,12 @@ class Trainer(object):
                 print("Model saved in file: %s. Data saved in file: %s" % (this_save_path, self.data_save_path))
 
                 # validation error
-                val_loss, val_loss_neg, mean_ndcg, mean_exp_ndcg = self.get_val_loss(epoch,
-                                                                                          sess)  # loss for testing triples and negative samples
+                val_loss, val_loss_neg, mean_ndcg, mean_exp_ndcg = self.get_val_loss(epoch, sess)  # loss for testing triples and negative samples
                 val_losses.append([epoch, val_loss, val_loss_neg, mean_ndcg, mean_exp_ndcg])
 
                 # save and print metrics
                 self.save_loss(train_losses, self.train_loss_path, columns=['epoch', 'training_loss'])
-                self.save_loss(val_losses, self.val_loss_path,
-                               columns=['val_epoch', 'mse', 'mse_neg', 'ndcg(linear)', 'ndcg(exp)'])
+                self.save_loss(val_losses, self.val_loss_path, columns=['val_epoch', 'mse', 'mse_neg', 'ndcg(linear)', 'ndcg(exp)'])
 
         this_save_path = self.tf_parts._saver.save(sess, self.save_path)
         with sess.as_default():
@@ -216,7 +214,6 @@ class Trainer(object):
             soft_h_index, soft_r_index, soft_t_index, soft_w_index = self.batchloader.gen_psl_samples()  # length: param.n_psl
             batch_time += time.time() - time00
 
-            # With 
             # A_loss: Main Loss + PSL Loss
             # mse_pos: MSE on Positive samples
             # mse_neg: MSE on Negative samples

@@ -15,7 +15,7 @@ from numpy import linalg as LA
 from scipy.special import expit as sigmoid
 from os.path import join
 from sklearn import tree
-from src.model import UKGE_logi_TF, UKGE_rect_TF
+from src.model import UKGE_LOGI, UKGE_RECT
 tf.disable_v2_behavior()
 
 # This class is used to load and combine a TF_Parts and a Data object, and provides some useful methods for training
@@ -672,7 +672,7 @@ class UKGE_logi_Validator(Validator):
 
         # load tf model and embeddings
         model_save_path = join(model_dir, model_filename)
-        self.tf_parts = UKGE_logi_TF(num_rels=self.this_data.num_rels(),
+        self.tf_parts = UKGE_LOGI(num_rels=self.this_data.num_rels(),
                                      num_cons=self.this_data.num_cons(),
                                      dim=self.this_data.dim,
                                      batch_size=self.this_data.batch_size, neg_per_positive=10, p_neg=1)
@@ -745,7 +745,7 @@ class UKGE_rect_Validator(Validator):
 
         # reg_scale and neg_per_pos won't be used in the tf model during testing
         # just give any to build
-        self.tf_parts = UKGE_rect_TF(num_rels=self.this_data.num_rels(),
+        self.tf_parts = UKGE_RECT(num_rels=self.this_data.num_rels(),
                                      num_cons=self.this_data.num_cons(),
                                      dim=self.this_data.dim,
                                      batch_size=self.this_data.batch_size, neg_per_positive=10, reg_scale=0.1,

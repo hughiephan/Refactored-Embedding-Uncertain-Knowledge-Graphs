@@ -5,7 +5,7 @@ Tensorflow related part
 import tensorflow.compat.v1 as tf
 tf.disable_v2_behavior()
 
-class TFParts(object):
+class UKGE(object):
     '''
     TensorFlow-related things.
     Keep TensorFlow-related components in a neat shell.
@@ -101,9 +101,9 @@ class TFParts(object):
         return self._neg_per_positive * self._batch_size
 
 
-class UKGE_logi_TF(TFParts):
+class UKGE_LOGI(UKGE):
     def __init__(self, num_rels, num_cons, dim, batch_size, neg_per_positive, p_neg):
-        TFParts.__init__(self, num_rels, num_cons, dim, batch_size, neg_per_positive, p_neg)
+        UKGE.__init__(self, num_rels, num_cons, dim, batch_size, neg_per_positive, p_neg)
         self.build()
 
     # Override abstract method
@@ -131,9 +131,9 @@ class UKGE_logi_TF(TFParts):
         self.compute_psl_loss()
 
 
-class UKGE_rect_TF(TFParts):
+class UKGE_RECT(UKGE):
     def __init__(self, num_rels, num_cons, dim, batch_size, neg_per_positive, reg_scale, p_neg):
-        TFParts.__init__(self, num_rels, num_cons, dim, batch_size, neg_per_positive, p_neg)
+        UKGE.__init__(self, num_rels, num_cons, dim, batch_size, neg_per_positive, p_neg)
         self.reg_scale = reg_scale
         self.build()
 

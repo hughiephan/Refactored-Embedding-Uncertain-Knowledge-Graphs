@@ -9,7 +9,7 @@ from os.path import join
 from src import param
 from src.data import BatchLoader
 from src.utils import vec_length, ModelList
-from src.model import UKGE_logi_TF, UKGE_rect_TF
+from src.model import UKGE_LOGI, UKGE_RECT
 from src.validator import UKGE_logi_Validator, UKGE_rect_Validator
 tf.disable_v2_behavior()
 
@@ -61,7 +61,7 @@ class Trainer(object):
 
         self.model = param.model
         if self.model == ModelList.LOGI:
-            self.tf_parts = UKGE_logi_TF(
+            self.tf_parts = UKGE_LOGI(
                 num_rels=self.this_data.num_rels(),
                 num_cons=self.this_data.num_cons(),
                 dim=self.dim,
@@ -71,7 +71,7 @@ class Trainer(object):
             )
             self.validator = UKGE_logi_Validator()
         elif self.model == ModelList.RECT:
-            self.tf_parts = UKGE_rect_TF(
+            self.tf_parts = UKGE_RECT(
                 num_rels=self.this_data.num_rels(),
                 num_cons=self.this_data.num_cons(),
                 dim=self.dim,

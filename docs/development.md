@@ -2,11 +2,22 @@
 
 ## Install the following tools
 
-- For downloading the code from Github, you can install SourceTree from this link: https://www.sourcetreeapp.com
+- For working with Pytorch code, you can install Visual Studio Code by following this guide: https://www.geeksforgeeks.org/how-to-install-visual-studio-code-on-windows
 
-- For working with Pytorch code, you can install Visual Studio Code from this link: https://code.visualstudio.com/Download
+- For downloading the code from Github, you can install SourceTree by following this guide: https://confluence.atlassian.com/get-started-with-sourcetree/install-sourcetree-847359094.html
 
-- For managing the Python, PyTorch, and other libraries environment, you can install Anaconda: https://docs.anaconda.com/free/anaconda/install/windows
+- For managing the Python, PyTorch, and other libraries environment, you can install Anaconda by following this guide: https://www.datacamp.com/tutorial/installing-anaconda-windows
+
+## Working with Visual Studio Code
+
+Click on `File` and `Open Folder`
+
+![image](https://github.com/hughiephan/UKGE/assets/16631121/53611281-1ac5-4672-91fe-5aa7cfbec58d)
+
+Then point to your code Folder and open it
+
+![image](https://github.com/hughiephan/UKGE/assets/16631121/566ebe30-5268-41eb-9fef-c7237b775094)
+
 
 ## Working with SourceTree
 Download code from GitHub

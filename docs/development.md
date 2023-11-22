@@ -9,10 +9,7 @@
 - For downloading the code from Github, you can install SourceTree from this link: https://www.sourcetreeapp.com
 
 ## SourceTree
-
-
-
-Start SourceTree
+Clone / Download code from GitHub
 
 ![image](https://github.com/hughiephan/UKGE/assets/16631121/6ec05dd5-603f-4f10-afc9-c080dab39076)
 

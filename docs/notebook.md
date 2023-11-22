@@ -1,5 +1,7 @@
 # UKGE Notebook
 
+Dataset is from: https://www.kaggle.com/datasets/thala321/cn15k-dataset
+
 ## Define model
 ```python
 import tensorflow.compat.v1 as tf

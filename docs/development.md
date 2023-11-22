@@ -8,17 +8,6 @@
 
 - For managing the Python, PyTorch, and other libraries environment, you can install Anaconda by following this guide: https://www.datacamp.com/tutorial/installing-anaconda-windows
 
-## Working with Visual Studio Code
-
-Click on `File` and `Open Folder`
-
-![image](https://github.com/hughiephan/UKGE/assets/16631121/53611281-1ac5-4672-91fe-5aa7cfbec58d)
-
-Then point to your code Folder and open it
-
-![image](https://github.com/hughiephan/UKGE/assets/16631121/566ebe30-5268-41eb-9fef-c7237b775094)
-
-
 ## Working with SourceTree
 Download code from GitHub
 
@@ -51,6 +40,16 @@ You will see that your code is now successfully uploaded
 Check again in the website and you will see your code is already pushed and uploaded to the Github repo website
 
 ![image](https://github.com/hughiephan/UKGE/assets/16631121/bd9ae84d-3a32-4ce7-92e9-4f399ffe5351)
+
+## Working with Visual Studio Code
+
+Click on `File` and `Open Folder`
+
+![image](https://github.com/hughiephan/UKGE/assets/16631121/53611281-1ac5-4672-91fe-5aa7cfbec58d)
+
+Then point to your code Folder and open it
+
+![image](https://github.com/hughiephan/UKGE/assets/16631121/566ebe30-5268-41eb-9fef-c7237b775094)
 
 ## Anaconda 
 

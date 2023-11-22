@@ -2,16 +2,11 @@
 
 Dataset is from: https://www.kaggle.com/datasets/thala321/cn15k-dataset
 
-## Define model
+## Define Data, BatchLoader, and UKGE Model
 ```python
 import tensorflow.compat.v1 as tf
 import pandas as pd
 import numpy as np
-import pickle
-from scipy.special import expit as sigmoid
-from sklearn import tree
-from sklearn import preprocessing
-from sklearn import utils
 tf.disable_v2_behavior()
 
 class Data(object):
@@ -39,7 +34,7 @@ class Data(object):
         # head per tail and tail per head (for each relation). used for bernoulli negative sampling
         self.hpt = np.array([0])
         self.tph = np.array([0])
-        # recorded for tf_parts
+        # recorded for model
         self.dim = 64
         self.batch_size = 1024
         self.L1 = False
@@ -233,57 +228,7 @@ class UKGE_LOGI(UKGE):
     def define_psl_loss(self):
         self.psl_prob = tf.sigmoid(self.w*tf.reduce_sum(tf.multiply(self._soft_r_batch, tf.multiply(self._soft_h_batch, self._soft_t_batch)), 1)+self.b)
         self.compute_psl_loss()
-```
-
-## Load model, extract values and start training
-```python
-train_data = pd.read_csv('/kaggle/input/cn15k-dataset/train.tsv', sep='\t', header=None, names=['v1','relation','v2','w'])
-this_data = Data()
-this_data.load_data(file_train='/kaggle/input/cn15k-dataset/train.tsv', 
-                    file_val='/kaggle/input/cn15k-dataset/val.tsv', 
-                    file_psl='/kaggle/input/cn15k-dataset/softlogic.tsv')
         
-model = UKGE_LOGI(num_rels=this_data.num_rels(),
-                    num_cons=this_data.num_cons(),
-                    dim=this_data.dim,
-                    batch_size=this_data.batch_size, 
-                    neg_per_positive=10, 
-                    p_neg=1)
-
-# Extracting Values
-sess = tf.Session()
-sess.run(tf.global_variables_initializer())
-value_ht, value_r, w, b = sess.run([model._ht, model._r, model.w, model.b])
-sess.close()
-vec_c = np.array(value_ht)
-vec_r = np.array(value_r)
-
-# Training
-def get_score_batch(h_batch, r_batch, t_batch, isneg2Dbatch=False):
-    hvecs = np.squeeze(vec_c[[h_batch], :])
-    rvecs = np.squeeze(vec_r[[r_batch], :])
-    tvecs = np.squeeze(vec_c[[h_batch], :])
-    if isneg2Dbatch:
-        axis = 2  # axis for reduce_sum
-    else:
-        axis = 1
-    return sigmoid(w*np.sum(np.multiply(np.multiply(hvecs, tvecs), rvecs), axis=axis)+b)
-
-train_h, train_r, train_t = train_data['v1'].values.astype(int), train_data['relation'].values.astype(int), train_data['v2'].values.astype(int)
-train_X = get_score_batch(train_h, train_r, train_t)[:, np.newaxis]  # Feature(2D, n*1)
-# train_Y = train_data['w']>confT  # label (high confidence/not)
-train_Y = train_data['w'] # Simplify this code because I could not find what is confT
-clf = tree.DecisionTreeClassifier()
-lab = preprocessing.LabelEncoder()
-train_X_transformed = lab_enc.fit_transform(train_X)
-train_Y_transformed = lab.fit_transform(train_Y)
-clf.fit([train_X_transformed], [train_Y_transformed])
-```
-
-## Try with Validator
-```python
-import time
-
 class BatchLoader():
     def __init__(self, data_obj, batch_size, neg_per_positive):
         self.this_data = data_obj  # Data() object
@@ -359,101 +304,88 @@ class BatchLoader():
         neg_tn_batch = np.random.randint(0, N, size=(self.batch_size, self.neg_per_positive))
 
         return neg_hn_batch, neg_rel_hn_batch, neg_t_batch, neg_h_batch, neg_rel_tn_batch, neg_tn_batch
+```
 
-    
+## Set variables
+```python
 neg_per_positive = 10
+batch_size = 1024
+epochs = 20
+lr=0.001
+```
+
+## Load data
+```python
+train_data = pd.read_csv('/kaggle/input/cn15k-dataset/train.tsv', sep='\t', header=None, names=['v1','relation','v2','w'])
+this_data = Data()
+this_data.load_data(file_train='/kaggle/input/cn15k-dataset/train.tsv', 
+                file_val='/kaggle/input/cn15k-dataset/val.tsv', 
+                file_psl='/kaggle/input/cn15k-dataset/softlogic.tsv')
 batchloader = BatchLoader(this_data, batch_size, neg_per_positive)
+```
 
+## Model
+```python
+model = UKGE_LOGI(num_rels=this_data.num_rels(),
+                num_cons=this_data.num_cons(),
+                dim=this_data.dim,
+                batch_size=this_data.batch_size, 
+                neg_per_positive=10, 
+                p_neg=1)
+```
 
-
-def train1epoch(sess, num_batch, lr, epoch):
-    batch_time = 0
+## Training
+```python
+sess = tf.Session()  # show device info
+sess.run(tf.global_variables_initializer())
+num_batch = this_data.triples.shape[0] // batch_size
+print('Number of batches per epoch: %d' % num_batch)
+train_losses = []  # [[every epoch, loss]]
+val_losses = []  # [[saver epoch, loss]]
+for epoch in range(1, epochs + 1):
     epoch_batches = batchloader.gen_batch(forever=True)
     epoch_loss = []
-
     for batch_id in range(num_batch):
         batch = next(epoch_batches)
         A_h_index, A_r_index, A_t_index, A_w, A_neg_hn_index, A_neg_rel_hn_index, A_neg_t_index, A_neg_h_index, A_neg_rel_tn_index, A_neg_tn_index = batch
-        time00 = time.time()
         soft_h_index, soft_r_index, soft_t_index, soft_w_index = batchloader.gen_psl_samples()  # length: param.n_psl
-        batch_time += time.time() - time00
-
         # mse_pos: MSE on Positive samples
         # mse_neg: MSE on Negative samples
         _, gradient, batch_loss, psl_mse, mse_pos, mse_neg, main_loss, psl_prob, psl_mse_each, rule_prior = sess.run(
             [
-                tf_parts._train_op, 
-                tf_parts._gradient,
-                tf_parts._A_loss, # A_loss: Main Loss + PSL Loss
-                tf_parts.psl_mse, 
-                tf_parts._f_score_h, 
-                tf_parts._f_score_hn,
-                tf_parts.main_loss, 
-                tf_parts.psl_prob, 
-                tf_parts.psl_error_each,
-                tf_parts.prior_psl0
+                model._train_op, 
+                model._gradient,
+                model._A_loss, # A_loss: Main Loss + PSL Loss
+                model.psl_mse, 
+                model._f_score_h, 
+                model._f_score_hn,
+                model.main_loss, 
+                model.psl_prob, 
+                model.psl_error_each,
+                model.prior_psl0
             ],
             feed_dict={
-                tf_parts._A_h_index: A_h_index,
-                tf_parts._A_r_index: A_r_index,
-                tf_parts._A_t_index: A_t_index,
-                tf_parts._A_w: A_w,
-                tf_parts._A_neg_hn_index: A_neg_hn_index,
-                tf_parts._A_neg_rel_hn_index: A_neg_rel_hn_index,
-                tf_parts._A_neg_t_index: A_neg_t_index,
-                tf_parts._A_neg_h_index: A_neg_h_index,
-                tf_parts._A_neg_rel_tn_index: A_neg_rel_tn_index,
-                tf_parts._A_neg_tn_index: A_neg_tn_index,
-                tf_parts._soft_h_index: soft_h_index,
-                tf_parts._soft_r_index: soft_r_index,
-                tf_parts._soft_t_index: soft_t_index,
-                tf_parts._soft_w: soft_w_index, 
-                tf_parts._lr: lr # Learning Rate
+                model._A_h_index: A_h_index,
+                model._A_r_index: A_r_index,
+                model._A_t_index: A_t_index,
+                model._A_w: A_w,
+                model._A_neg_hn_index: A_neg_hn_index,
+                model._A_neg_rel_hn_index: A_neg_rel_hn_index,
+                model._A_neg_t_index: A_neg_t_index,
+                model._A_neg_h_index: A_neg_h_index,
+                model._A_neg_rel_tn_index: A_neg_rel_tn_index,
+                model._A_neg_tn_index: A_neg_tn_index,
+                model._soft_h_index: soft_h_index,
+                model._soft_r_index: soft_r_index,
+                model._soft_t_index: soft_t_index,
+                model._soft_w: soft_w_index, 
+                model._lr: lr # Learning Rate
             })
-        param.prior_psl = rule_prior
+        prior_psl = rule_prior
         epoch_loss.append(batch_loss)
         if ((batch_id + 1) % 50 == 0) or batch_id == num_batch - 1:
             print('process: %d / %d. Epoch %d' % (batch_id + 1, num_batch, epoch))
-
     this_total_loss = np.sum(epoch_loss) / len(epoch_loss)
     print("Loss of epoch %d = %s" % (epoch, np.sum(this_total_loss)))
     # print('MSE on positive instances: %f, MSE on negative samples: %f' % (np.mean(mse_pos), np.mean(mse_neg)))
-    return this_total_loss
-
-
-
-batch_size = 128
-epochs = 20
-lr=0.001
-
-sess = tf.Session()  # show device info
-sess.run(tf.global_variables_initializer())
-
-num_batch = this_data.triples.shape[0] // batch_size
-print('Number of batches per epoch: %d' % num_batch)
-
-train_losses = []  # [[every epoch, loss]]
-val_losses = []  # [[saver epoch, loss]]
-
-for epoch in range(1, epochs + 1):
-    epoch_loss = train1epoch(sess, num_batch, lr, epoch)
-    train_losses.append([epoch, epoch_loss])
-
-    if np.isnan(epoch_loss):
-        print("Nan loss. Training collapsed.")
-
-    if epoch % save_every_epoch == 0:
-        # save model
-        this_save_path = self.tf_parts._saver.save(sess, self.save_path, global_step=epoch)  # save model
-        self.this_data.save(self.data_save_path)  # save data
-        print('VALIDATE AND SAVE MODELS:')
-        print("Model saved in file: %s. Data saved in file: %s" % (this_save_path, self.data_save_path))
-
-        # validation error
-        val_loss, val_loss_neg, mean_ndcg, mean_exp_ndcg = self.get_val_loss(epoch, sess)  # loss for testing triples and negative samples
-        val_losses.append([epoch, val_loss, val_loss_neg, mean_ndcg, mean_exp_ndcg])
-
-        # save and print metrics
-        self.save_loss(train_losses, self.train_loss_path, columns=['epoch', 'training_loss'])
-        self.save_loss(val_losses, self.val_loss_path, columns=['val_epoch', 'mse', 'mse_neg', 'ndcg(linear)', 'ndcg(exp)'])
 ```

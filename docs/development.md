@@ -9,7 +9,7 @@
 - For downloading the code from Github, you can install SourceTree from this link: https://www.sourcetreeapp.com
 
 ## SourceTree
-Clone / Download code from GitHub
+Download code from GitHub
 
 ![image](https://github.com/hughiephan/UKGE/assets/16631121/6ec05dd5-603f-4f10-afc9-c080dab39076)
 
@@ -37,6 +37,6 @@ You will see that your code is now successfully uploaded
 
 ![image](https://github.com/hughiephan/UKGE/assets/16631121/312880ce-4ef0-49ac-a28d-c4b8fb995437)
 
-Check in the website and you see your code is already pushed and uploaded to the Github repo website
+Check again in the website and you will see your code is already pushed and uploaded to the Github repo website
 
 ![image](https://github.com/hughiephan/UKGE/assets/16631121/bd9ae84d-3a32-4ce7-92e9-4f399ffe5351)

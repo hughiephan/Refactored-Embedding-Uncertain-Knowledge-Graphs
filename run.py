@@ -68,3 +68,5 @@ this_data.save_meta_table(save_dir)  # output: idx_concept.csv, idx_relation.csv
 trainer = Trainer()
 trainer.build(this_data, save_dir)
 ht_embedding, r_embedding = trainer.train(epochs=param.n_epoch, save_every_epoch=param.val_save_freq, lr=param.learning_rate, data_dir=param.data_dir()) 
+
+# lalala from hughie

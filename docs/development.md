@@ -28,7 +28,7 @@ Tick on `Push changes immediately to origin/master` and then press `Commit`
 
 ![image](https://github.com/hughiephan/UKGE/assets/16631121/0202dbea-8a75-488f-acff-ebdbc7631fd5)
 
-You will see that your code is pushed and merged 
+You will see that your code is now pushed and merged 
 
 ![image](https://github.com/hughiephan/UKGE/assets/16631121/312880ce-4ef0-49ac-a28d-c4b8fb995437)
 

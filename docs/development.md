@@ -17,7 +17,7 @@ Add the Repo you want to clone, for example: https://github.com/hughiephan/UKGE 
 
 ![image](https://github.com/hughiephan/UKGE/assets/16631121/7dd84aa0-75b3-4aee-9f99-4c822a1d2d64)
 
-Pull the code first
+Pull the code to make sure the code we are looking at is always the latest. Because sometimes other people will upload new code to this repo and we want to use their new code too, so make sure you pull everytime you start SourceTree
 
 ![image](https://github.com/hughiephan/UKGE/assets/16631121/9bd165a6-c048-4ce8-ba2e-7ccbdeee8f81)
 

@@ -1,12 +1,12 @@
 # How to start development
 
-## Install please tools
+## Install the following tools
 
-- For managing the Python, PyTorch, and other libraries environment, you can install Anaconda: https://docs.anaconda.com/free/anaconda/install/windows
+- For downloading the code from Github, you can install SourceTree from this link: https://www.sourcetreeapp.com
 
 - For working with Pytorch code, you can install Visual Studio Code from this link: https://code.visualstudio.com/Download
 
-- For downloading the code from Github, you can install SourceTree from this link: https://www.sourcetreeapp.com
+- For managing the Python, PyTorch, and other libraries environment, you can install Anaconda: https://docs.anaconda.com/free/anaconda/install/windows
 
 ## SourceTree
 Download code from GitHub
@@ -40,3 +40,10 @@ You will see that your code is now successfully uploaded
 Check again in the website and you will see your code is already pushed and uploaded to the Github repo website
 
 ![image](https://github.com/hughiephan/UKGE/assets/16631121/bd9ae84d-3a32-4ce7-92e9-4f399ffe5351)
+
+## Anaconda 
+
+This tool is useful as it allows us to separate many environments. For example, I will have an environment running Python 2 and Pytorch for paper A, and another environment running Python 3 and Keras for paper B
+
+![image](https://github.com/hughiephan/UKGE/assets/16631121/c4fa9cd2-819b-4cfa-8fa5-8a64852bba8b)
+

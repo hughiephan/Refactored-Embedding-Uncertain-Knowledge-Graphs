@@ -2,7 +2,7 @@
 
 This repository includes the code of UKGE and data used in the experiments. The original model can only run with Tensorflow 1.0, we made some minor changes so it can be run with Tensorflow 2.0
 
-## Install Python and Libraries
+## Install
 
 Make sure your local environment has Python and the following libraries (TensorFlow, scikit-learn, pandas) installed them by running the commands `pip install -r requirements.txt`
 

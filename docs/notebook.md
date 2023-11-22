@@ -279,3 +279,181 @@ train_X_transformed = lab_enc.fit_transform(train_X)
 train_Y_transformed = lab.fit_transform(train_Y)
 clf.fit([train_X_transformed], [train_Y_transformed])
 ```
+
+## Try with Validator
+```python
+import time
+
+class BatchLoader():
+    def __init__(self, data_obj, batch_size, neg_per_positive):
+        self.this_data = data_obj  # Data() object
+        self.shuffle = True
+        self.batch_size = batch_size
+        self.neg_per_positive = neg_per_positive
+        self.n_soft_samples = 1  # number of samples per batch, n_psl
+
+    def gen_psl_samples(self):
+        # samples from probabilistic soft logic
+        softlogics = self.this_data.soft_logic_triples  # [[A, B, base]]
+        triple_indices = np.random.randint(0, softlogics.shape[0], size=self.n_soft_samples)
+        samples = softlogics[triple_indices,:]
+        soft_h, soft_r, soft_t, soft_lb = samples[:,0].astype(int),samples[:,1].astype(int),samples[:,2].astype(int), samples[:,3]
+        soft_sample_batch = (soft_h, soft_r, soft_t, soft_lb)
+        return soft_sample_batch
+
+    def gen_batch(self, forever=False, shuffle=True, negsampler=None):
+        """
+        :param ht_embedding: for kNN negative sampling
+        :return:
+        """
+        l = self.this_data.triples.shape[0]
+        while True:
+            triples = self.this_data.triples  # np.float64 [[h,r,t,w]]
+            if shuffle:
+                np.random.shuffle(triples)
+            for i in range(0, l, self.batch_size):
+                batch = triples[i: i + self.batch_size, :]
+                if batch.shape[0] < self.batch_size:
+                    batch = np.concatenate((batch, self.this_data.triples[:self.batch_size - batch.shape[0]]),
+                                           axis=0)
+                    assert batch.shape[0] == self.batch_size
+
+                h_batch, r_batch, t_batch, w_batch = batch[:, 0].astype(int), batch[:, 1].astype(int), batch[:,
+                                                                                                       2].astype(
+                    int), batch[:, 3]
+                hrt_batch = batch[:, 0:3].astype(int)
+
+
+                if negsampler is None:
+                    # all_neg_hn_batch = self.corrupt_batch(hrt_batch, self.neg_per_positive, "h")
+                    # all_neg_tn_batch = self.corrupt_batch(hrt_batch, self.neg_per_positive, "t")
+
+                    neg_hn_batch, neg_rel_hn_batch, \
+                    neg_t_batch, neg_h_batch, \
+                    neg_rel_tn_batch, neg_tn_batch \
+                        = self.corrupt_batch(h_batch, r_batch, t_batch)
+                else:
+                    # neg_per_positive controlled by sampler
+                    all_neg_hn_batch = negsampler.knn_negative_batch(hrt_batch, "h")
+                    all_neg_tn_batch = negsampler.knn_negative_batch(hrt_batch, "t")
+
+                yield h_batch.astype(np.int64), r_batch.astype(np.int64), t_batch.astype(
+                    np.int64), w_batch.astype(
+                    np.float32), \
+                      neg_hn_batch.astype(np.int64), neg_rel_hn_batch.astype(np.int64), \
+                      neg_t_batch.astype(np.int64), neg_h_batch.astype(np.int64), \
+                      neg_rel_tn_batch.astype(np.int64), neg_tn_batch.astype(np.int64)
+            if not forever:
+                break
+
+    def corrupt_batch(self, h_batch, r_batch, t_batch):
+        N = self.this_data.num_cons()  # number of entities
+
+        neg_hn_batch = np.random.randint(0, N, size=(
+        self.batch_size, self.neg_per_positive))  # random index without filtering
+        neg_rel_hn_batch = np.tile(r_batch, (self.neg_per_positive, 1)).transpose()  # copy
+        neg_t_batch = np.tile(t_batch, (self.neg_per_positive, 1)).transpose()
+
+        neg_h_batch = np.tile(h_batch, (self.neg_per_positive, 1)).transpose()
+        neg_rel_tn_batch = neg_rel_hn_batch
+        neg_tn_batch = np.random.randint(0, N, size=(self.batch_size, self.neg_per_positive))
+
+        return neg_hn_batch, neg_rel_hn_batch, neg_t_batch, neg_h_batch, neg_rel_tn_batch, neg_tn_batch
+
+    
+neg_per_positive = 10
+batchloader = BatchLoader(this_data, batch_size, neg_per_positive)
+
+
+
+def train1epoch(sess, num_batch, lr, epoch):
+    batch_time = 0
+    epoch_batches = batchloader.gen_batch(forever=True)
+    epoch_loss = []
+
+    for batch_id in range(num_batch):
+        batch = next(epoch_batches)
+        A_h_index, A_r_index, A_t_index, A_w, A_neg_hn_index, A_neg_rel_hn_index, A_neg_t_index, A_neg_h_index, A_neg_rel_tn_index, A_neg_tn_index = batch
+        time00 = time.time()
+        soft_h_index, soft_r_index, soft_t_index, soft_w_index = batchloader.gen_psl_samples()  # length: param.n_psl
+        batch_time += time.time() - time00
+
+        # mse_pos: MSE on Positive samples
+        # mse_neg: MSE on Negative samples
+        _, gradient, batch_loss, psl_mse, mse_pos, mse_neg, main_loss, psl_prob, psl_mse_each, rule_prior = sess.run(
+            [
+                tf_parts._train_op, 
+                tf_parts._gradient,
+                tf_parts._A_loss, # A_loss: Main Loss + PSL Loss
+                tf_parts.psl_mse, 
+                tf_parts._f_score_h, 
+                tf_parts._f_score_hn,
+                tf_parts.main_loss, 
+                tf_parts.psl_prob, 
+                tf_parts.psl_error_each,
+                tf_parts.prior_psl0
+            ],
+            feed_dict={
+                tf_parts._A_h_index: A_h_index,
+                tf_parts._A_r_index: A_r_index,
+                tf_parts._A_t_index: A_t_index,
+                tf_parts._A_w: A_w,
+                tf_parts._A_neg_hn_index: A_neg_hn_index,
+                tf_parts._A_neg_rel_hn_index: A_neg_rel_hn_index,
+                tf_parts._A_neg_t_index: A_neg_t_index,
+                tf_parts._A_neg_h_index: A_neg_h_index,
+                tf_parts._A_neg_rel_tn_index: A_neg_rel_tn_index,
+                tf_parts._A_neg_tn_index: A_neg_tn_index,
+                tf_parts._soft_h_index: soft_h_index,
+                tf_parts._soft_r_index: soft_r_index,
+                tf_parts._soft_t_index: soft_t_index,
+                tf_parts._soft_w: soft_w_index, 
+                tf_parts._lr: lr # Learning Rate
+            })
+        param.prior_psl = rule_prior
+        epoch_loss.append(batch_loss)
+        if ((batch_id + 1) % 50 == 0) or batch_id == num_batch - 1:
+            print('process: %d / %d. Epoch %d' % (batch_id + 1, num_batch, epoch))
+
+    this_total_loss = np.sum(epoch_loss) / len(epoch_loss)
+    print("Loss of epoch %d = %s" % (epoch, np.sum(this_total_loss)))
+    # print('MSE on positive instances: %f, MSE on negative samples: %f' % (np.mean(mse_pos), np.mean(mse_neg)))
+    return this_total_loss
+
+
+
+batch_size = 128
+epochs = 20
+lr=0.001
+
+sess = tf.Session()  # show device info
+sess.run(tf.global_variables_initializer())
+
+num_batch = this_data.triples.shape[0] // batch_size
+print('Number of batches per epoch: %d' % num_batch)
+
+train_losses = []  # [[every epoch, loss]]
+val_losses = []  # [[saver epoch, loss]]
+
+for epoch in range(1, epochs + 1):
+    epoch_loss = train1epoch(sess, num_batch, lr, epoch)
+    train_losses.append([epoch, epoch_loss])
+
+    if np.isnan(epoch_loss):
+        print("Nan loss. Training collapsed.")
+
+    if epoch % save_every_epoch == 0:
+        # save model
+        this_save_path = self.tf_parts._saver.save(sess, self.save_path, global_step=epoch)  # save model
+        self.this_data.save(self.data_save_path)  # save data
+        print('VALIDATE AND SAVE MODELS:')
+        print("Model saved in file: %s. Data saved in file: %s" % (this_save_path, self.data_save_path))
+
+        # validation error
+        val_loss, val_loss_neg, mean_ndcg, mean_exp_ndcg = self.get_val_loss(epoch, sess)  # loss for testing triples and negative samples
+        val_losses.append([epoch, val_loss, val_loss_neg, mean_ndcg, mean_exp_ndcg])
+
+        # save and print metrics
+        self.save_loss(train_losses, self.train_loss_path, columns=['epoch', 'training_loss'])
+        self.save_loss(val_losses, self.val_loss_path, columns=['val_epoch', 'mse', 'mse_neg', 'ndcg(linear)', 'ndcg(exp)'])
+```

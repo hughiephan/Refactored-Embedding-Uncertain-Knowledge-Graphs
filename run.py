@@ -3,6 +3,7 @@
 python run.py -m rect --data cn15k --lr 0.01 --batch_size 300
 """
 
+# This is a test commit
 import sys
 import os
 import datetime

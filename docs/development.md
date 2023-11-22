@@ -13,6 +13,8 @@ Clone / Download code from GitHub
 
 ![image](https://github.com/hughiephan/UKGE/assets/16631121/6ec05dd5-603f-4f10-afc9-c080dab39076)
 
+Add the Repo you want to clone, for example: https://github.com/hughiephan/UKGE
+
 ![image](https://github.com/hughiephan/UKGE/assets/16631121/7dd84aa0-75b3-4aee-9f99-4c822a1d2d64)
 
 Pull the code first

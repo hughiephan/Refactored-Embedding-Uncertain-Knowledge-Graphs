@@ -8,7 +8,7 @@
 
 - For managing the Python, PyTorch, and other libraries environment, you can install Anaconda: https://docs.anaconda.com/free/anaconda/install/windows
 
-## SourceTree
+## Working with SourceTree
 Download code from GitHub
 
 ![image](https://github.com/hughiephan/UKGE/assets/16631121/6ec05dd5-603f-4f10-afc9-c080dab39076)

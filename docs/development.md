@@ -32,3 +32,6 @@ You will see that your code is pushed and merged
 
 ![image](https://github.com/hughiephan/UKGE/assets/16631121/312880ce-4ef0-49ac-a28d-c4b8fb995437)
 
+Check in the website and you see your code is already pushed and uploaded to the Github repo website
+
+![image](https://github.com/hughiephan/UKGE/assets/16631121/bd9ae84d-3a32-4ce7-92e9-4f399ffe5351)

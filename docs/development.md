@@ -21,6 +21,8 @@ Pull the code to make sure the code we are looking at is always the latest. Beca
 
 ![image](https://github.com/hughiephan/UKGE/assets/16631121/9bd165a6-c048-4ce8-ba2e-7ccbdeee8f81)
 
+Try changing something in the code, I will add the line `This is a test commit` in `run.py`
+
 ![image](https://github.com/hughiephan/UKGE/assets/16631121/5030febf-427e-4c45-a7ef-b209acb29636)
 
 Press `Commit` and `Stage all`

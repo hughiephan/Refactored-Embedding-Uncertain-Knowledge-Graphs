@@ -25,7 +25,7 @@ Try changing something in the code, I will add the line `This is a test commit` 
 
 ![image](https://github.com/hughiephan/UKGE/assets/16631121/5030febf-427e-4c45-a7ef-b209acb29636)
 
-Press `Commit` and `Stage all`
+To upload the new code, we press `Commit` and then `Stage all`
 
 ![image](https://github.com/hughiephan/UKGE/assets/16631121/169e0f5e-e3e8-4565-963c-9f4be5ffb0d0)
 
@@ -33,7 +33,7 @@ Tick on `Push changes immediately to origin/master` and then press `Commit`
 
 ![image](https://github.com/hughiephan/UKGE/assets/16631121/0202dbea-8a75-488f-acff-ebdbc7631fd5)
 
-You will see that your code is now pushed and merged 
+You will see that your code is now successfully uploaded
 
 ![image](https://github.com/hughiephan/UKGE/assets/16631121/312880ce-4ef0-49ac-a28d-c4b8fb995437)
 

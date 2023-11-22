@@ -1,4 +1,4 @@
-# Prerequisite Knowledge
+# Tensorflow
 
 ## tf.global_variables_initializer
 

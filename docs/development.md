@@ -57,3 +57,15 @@ This tool is useful as it allows us to separate many environments. For example, 
 
 ![image](https://github.com/hughiephan/UKGE/assets/16631121/c4fa9cd2-819b-4cfa-8fa5-8a64852bba8b)
 
+Let's create a new `UKGE` environment, click on `Environments`, add the name `ukge` and choose any Python version you want and then click `Create`
+
+![image](https://github.com/hughiephan/UKGE/assets/16631121/f3b9dd86-d651-4488-b8d2-fc24a2bbc6d8)
+
+Then select `Not installed` to access all the packages we haven't installed yet
+
+![image](https://github.com/hughiephan/UKGE/assets/16631121/c7f886d3-9c9b-41bf-91e9-421f6289d45f)
+
+Then type a library you want to install into the search, for example: tensorflow . So basically, you will need to do this for all the libraries that exist in the `requirements.txt` file
+
+![image](https://github.com/hughiephan/UKGE/assets/16631121/4d97013e-e9ef-4434-8ade-cf2a199b3e66)
+

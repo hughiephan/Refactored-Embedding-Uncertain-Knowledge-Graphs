@@ -6,4 +6,8 @@
 
 - For working with Pytorch code, please install Visual Studio Code: https://code.visualstudio.com/Download
 
-- For downloading the code from Github, please install Source Tree: https://www.sourcetreeapp.com
+## SourceTree
+
+This tool is useful for downloading the code from Github, you can install SourceTree from this link: https://www.sourcetreeapp.com
+
+![image](https://github.com/hughiephan/UKGE/assets/16631121/6ec05dd5-603f-4f10-afc9-c080dab39076)

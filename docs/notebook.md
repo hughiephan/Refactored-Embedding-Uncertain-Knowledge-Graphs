@@ -2,6 +2,8 @@
 
 Dataset is from: https://www.kaggle.com/datasets/thala321/cn15k-dataset
 
+Most of the code that uses `Placeholders`, `Sessions`,... are from Tensorflow 1.0 and are removed in Tensorflow 2.0
+
 ## Define Data, BatchLoader, and UKGE Model
 ```python
 import tensorflow.compat.v1 as tf

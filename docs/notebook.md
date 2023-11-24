@@ -186,6 +186,14 @@ batchloader = BatchLoader(this_data, batch_size, neg_per_positive)
 
 ## Step 5: Define UKGE LOGI Model
 
+`__init__` method initializes various parameters required for the UKGE Logistic Regression model, like the number of relations (num_rels), number of ontologies (num_cons), embedding dimensions (dim), batch size (batch_size), etc. It also sets default values for certain coefficients and variables used in the model.
+
+Then defines the placeholders for input data: `_A_*` placeholders for indices of entities and relations, `_soft_*` placeholders for uncertain graph and PSL-related data and initializes trainable variables with `ht` for entity embeddings, and `r` for relation embeddings. Embeddings for positive and negative samples are looked up from the embedding matrices using `tf.nn.embedding_lookup`.
+
+`main_loss` computes the main loss for the model. It uses the embeddings to calculate scores for positive and negative samples and computes a loss based on the difference between these scores and the expected scores `_A_w` placeholder. While `psl_loss` computes the loss related to Probabilistic Soft Logic (PSL). It involves calculating a probability based on uncertain graph embeddings and then calculating the error against expected soft constraints.
+
+`_opt` uses the Adam optimizer to minimize the combined loss `_A_loss`, which includes both the main loss and the PSL loss. `_train_op` applies the gradients computed by the optimizer to update the model parameters during training.
+
 ```python
 class UKGE_LOGI(object):
     '''
@@ -269,7 +277,6 @@ class UKGE_LOGI(object):
         self._opt = tf.train.AdamOptimizer(self._lr)
         self._gradient = self._opt.compute_gradients(self._A_loss) 
         self._train_op = self._opt.apply_gradients(self._gradient)
-        self._saver = tf.train.Saver(max_to_keep=2)  
 ```
 
 ## Step 6: Model

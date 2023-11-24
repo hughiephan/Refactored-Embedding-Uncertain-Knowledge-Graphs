@@ -334,7 +334,6 @@ for epoch in range(1, epochs + 1):
             print('process: %d / %d. Epoch %d' % (batch_id + 1, num_batch, epoch))
     this_total_loss = np.sum(epoch_loss) / len(epoch_loss)
     print("Loss of epoch %d = %s" % (epoch, np.sum(this_total_loss)))
-    # print('MSE on positive instances: %f, MSE on negative samples: %f' % (np.mean(mse_pos), np.mean(mse_neg)))
 ```
 
 ![image](https://github.com/hughiephan/UKGE/assets/16631121/f0b4d7f5-62c4-4755-b9a5-85f1e54fef43)

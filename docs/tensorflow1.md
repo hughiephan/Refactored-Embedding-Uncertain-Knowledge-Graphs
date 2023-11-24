@@ -1,4 +1,30 @@
-# Tensorflow
+# Tensorflow 1.0
+
+The standard worflow for Tensorflow 1.0 is:
+
+- Step 1: Create the tf.Graph object and set it as the default graph for the current scope.
+- Step 2: Describe the computation using the Tensorflow API (e.g. y = tf.matmul(a,x) + b).
+- Step 3: Think in advance about variable sharing and define the variables’ scope accordingly.
+- Step 4: Create and configure the tf.Session.
+- Step 5: Build the concrete graph and load it into the tf.Session.
+- Step 6: Initialize all the variables.
+- Step 7: Use the tf.Session.run method to start the computation. The node execution will trigger a backtracking procedure from the chosen nodes (.run input parameters) to their inputs, in order to resolve the dependencies and compute the result.
+
+Example:
+
+```python
+g = tf.Graph()
+with g.as_default():
+    a = tf.constant([[10,10],[11.,1.]])
+    x = tf.constant([[1.,0.],[0.,1.]])
+    b = tf.Variable(12.)
+    y = tf.matmul(a, x) + b
+    init_op = tf.global_variables_initializer()
+
+with tf.Session() as sess:
+    sess.run(init_op)
+    print(sess.run(y))
+```
 
 ## tf.global_variables_initializer
 

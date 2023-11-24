@@ -1,6 +1,8 @@
 # UKGE Notebook
 
-Dataset is from: https://www.kaggle.com/datasets/thala321/cn15k-dataset
+Prerequisite:
+- Create a new Notebook in Kaggle: https://kaggle.com
+- Download the dataset from: https://www.kaggle.com/datasets/thala321/cn15k-dataset
 
 ## Step 1: Import libraries
 

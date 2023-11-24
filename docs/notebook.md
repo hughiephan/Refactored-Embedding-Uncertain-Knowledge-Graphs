@@ -205,31 +205,9 @@ class BatchLoader():
 ```python
 class UKGE_LOGI(object):
     '''
-    TensorFlow-related things.
-    Keep TensorFlow-related components in a neat shell.
+    UKGE Logistic Regression
     
     '''
-
-    @property
-    def num_cons(self):
-        return self._num_cons
-
-    @property
-    def num_rels(self):
-        return self._num_rels
-
-    @property
-    def dim(self):
-        return self._dim
-
-    @property
-    def batch_size(self):
-        return self._batch_size
-
-    @property
-    def neg_batch_size(self):
-        return self._neg_per_positive * self._batch_size
-
     def __init__(self, num_rels, num_cons, dim, batch_size, neg_per_positive, p_neg):
         '''
         Initialize the variables
@@ -278,19 +256,19 @@ class UKGE_LOGI(object):
         tf.reset_default_graph()
         with tf.variable_scope("graph", initializer=tf.truncated_normal_initializer(0, 0.3)):
             # Variables (matrix of embeddings/transformations)
-            self._ht = ht = tf.get_variable(name='ht', shape=[self.num_cons, self.dim], dtype=tf.float32)
-            self._r = r = tf.get_variable(name='r', shape=[self.num_rels, self.dim], dtype=tf.float32)
-            self._A_h_index = A_h_index = tf.placeholder(dtype=tf.int64, shape=[self.batch_size], name='A_h_index')
-            self._A_r_index = A_r_index = tf.placeholder(dtype=tf.int64, shape=[self.batch_size], name='A_r_index')
-            self._A_t_index = A_t_index = tf.placeholder(dtype=tf.int64, shape=[self.batch_size], name='A_t_index')
+            self._ht = ht = tf.get_variable(name='ht', shape=[self._num_cons, self._dim], dtype=tf.float32)
+            self._r = r = tf.get_variable(name='r', shape=[self._num_rels, self._dim], dtype=tf.float32)
+            self._A_h_index = A_h_index = tf.placeholder(dtype=tf.int64, shape=[self._batch_size], name='A_h_index')
+            self._A_r_index = A_r_index = tf.placeholder(dtype=tf.int64, shape=[self._batch_size], name='A_r_index')
+            self._A_t_index = A_t_index = tf.placeholder(dtype=tf.int64, shape=[self._batch_size], name='A_t_index')
             # for uncertain graph
-            self._A_w = tf.placeholder(dtype=tf.float32, shape=[self.batch_size], name='_A_w')
-            self._A_neg_hn_index = A_neg_hn_index = tf.placeholder(dtype=tf.int64, shape=(self.batch_size, self._neg_per_positive), name='A_neg_hn_index')
-            self._A_neg_rel_hn_index = A_neg_rel_hn_index = tf.placeholder(dtype=tf.int64, shape=(self.batch_size, self._neg_per_positive), name='A_neg_rel_hn_index')
-            self._A_neg_t_index = A_neg_t_index = tf.placeholder(dtype=tf.int64, shape=(self.batch_size, self._neg_per_positive), name='A_neg_t_index')
-            self._A_neg_h_index = A_neg_h_index = tf.placeholder(dtype=tf.int64, shape=(self.batch_size, self._neg_per_positive), name='A_neg_h_index')
-            self._A_neg_rel_tn_index = A_neg_rel_tn_index = tf.placeholder(dtype=tf.int64, shape=(self.batch_size, self._neg_per_positive), name='A_neg_rel_tn_index')
-            self._A_neg_tn_index = A_neg_tn_index = tf.placeholder(dtype=tf.int64, shape=(self.batch_size, self._neg_per_positive), name='A_neg_tn_index')
+            self._A_w = tf.placeholder(dtype=tf.float32, shape=[self._batch_size], name='_A_w')
+            self._A_neg_hn_index = A_neg_hn_index = tf.placeholder(dtype=tf.int64, shape=(self._batch_size, self._neg_per_positive), name='A_neg_hn_index')
+            self._A_neg_rel_hn_index = A_neg_rel_hn_index = tf.placeholder(dtype=tf.int64, shape=(self._batch_size, self._neg_per_positive), name='A_neg_rel_hn_index')
+            self._A_neg_t_index = A_neg_t_index = tf.placeholder(dtype=tf.int64, shape=(self._batch_size, self._neg_per_positive), name='A_neg_t_index')
+            self._A_neg_h_index = A_neg_h_index = tf.placeholder(dtype=tf.int64, shape=(self._batch_size, self._neg_per_positive), name='A_neg_h_index')
+            self._A_neg_rel_tn_index = A_neg_rel_tn_index = tf.placeholder(dtype=tf.int64, shape=(self._batch_size, self._neg_per_positive), name='A_neg_rel_tn_index')
+            self._A_neg_tn_index = A_neg_tn_index = tf.placeholder(dtype=tf.int64, shape=(self._batch_size, self._neg_per_positive), name='A_neg_tn_index')
             # no normalization
             self._h_batch = tf.nn.embedding_lookup(ht, A_h_index)
             self._t_batch = tf.nn.embedding_lookup(ht, A_t_index)
@@ -320,7 +298,7 @@ class UKGE_LOGI(object):
         self._opt = opt = tf.train.AdamOptimizer(lr)
         self._gradient = gradient = opt.compute_gradients(self._A_loss) 
         self._train_op = opt.apply_gradients(gradient)
-        self._saver = tf.train.Saver(max_to_keep=2)    
+        self._saver = tf.train.Saver(max_to_keep=2)   
 ```
 
 ## Step 5: Load data

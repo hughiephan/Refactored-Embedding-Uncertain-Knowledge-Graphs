@@ -1,4 +1,4 @@
-# Tensorflow 1.0
+## Tensorflow 1.0
 
 The standard worflow for Tensorflow 1.0 is:
 
@@ -10,7 +10,7 @@ The standard worflow for Tensorflow 1.0 is:
 - Step 6: Initialize all the variables.
 - Step 7: Use the tf.Session.run method to start the computation. The node execution will trigger a backtracking procedure from the chosen nodes (.run input parameters) to their inputs, in order to resolve the dependencies and compute the result.
 
-Example:
+Example of Tensorflow 1.0:
 
 ```python
 g = tf.Graph()
@@ -24,6 +24,28 @@ with g.as_default():
 with tf.Session() as sess:
     sess.run(init_op)
     print(sess.run(y))
+```
+
+## Tensorflow 2.0
+
+But in Tensorflow 2.0:
+
+Most of the code that uses `Placeholders`, `Sessions`,... are from Tensorflow 1.0 and are removed in Tensorflow 2.0:
+
+- Remove the graph definition.
+- Remove the session execution.
+- Remove variables initialization.
+- Remove the variable sharing via scopes.
+- Remove the tf.control_dependencies to execute sequential operation not connected by a dependency relation.
+
+Example of Tensorflow 2.0:
+
+```python
+a = tf.constant([[10,10],[11.,1.]])
+x = tf.constant([[1.,0.],[0.,1.]])
+b = tf.Variable(12.)
+y = tf.matmul(a, x) + b
+print(y.numpy())
 ```
 
 ## tf.global_variables_initializer

@@ -186,7 +186,7 @@ batchloader = BatchLoader(this_data, batch_size, neg_per_positive)
 
 ## Step 5: Define UKGE LOGI Model
 
-`__init__` method initializes various parameters required for the UKGE Logistic Regression model, like the number of relations (num_rels), number of ontologies (num_cons), embedding dimensions (dim), batch size (batch_size), etc. It also sets default values for certain coefficients and variables used in the model.
+`__init__` method initializes various parameters required for the UKGE Logistic Regression model, like the number of relations `num_rels`, number of ontologies `num_cons`, embedding dimensions `dim`, batch size `batch_size`, etc. It also sets default values for certain coefficients and variables used in the model.
 
 Then defines the placeholders for input data: `_A_*` placeholders for indices of entities and relations, `_soft_*` placeholders for uncertain graph and PSL-related data and initializes trainable variables with `ht` for entity embeddings, and `r` for relation embeddings. Embeddings for positive and negative samples are looked up from the embedding matrices using `tf.nn.embedding_lookup`.
 

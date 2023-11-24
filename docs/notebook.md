@@ -335,6 +335,9 @@ model = UKGE_LOGI(num_rels=this_data.num_rels(),
 ```
 
 ## Training
+
+A session is created and started using `tf.Session()` and `Session.run` takes the operations we created and data to be fed as parameters and it returns the result.
+
 ```python
 sess = tf.Session()  # show device info
 sess.run(tf.global_variables_initializer())

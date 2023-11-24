@@ -1,6 +1,6 @@
 # UKGE Notebook
 
-This Notebook is extracted with only the crucial parts from UKGE Codebase so some parts like Validator, RECT, @property and other datasets like PPI5k, NL27K was not included for a thorough reading.
+This Notebook is extracted with only the crucial parts from UKGE Codebase so some parts like Validator, RECT, @property and other datasets like PPI5k, NL27K was not included for a thorough understanding.
 
 Prerequisite:
 - Create a new Notebook in Kaggle: https://kaggle.com

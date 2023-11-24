@@ -25,10 +25,13 @@ epochs = 20
 lr=0.001
 ```
 
-## Step 3: Define Data, BatchLoader
+## Step 3: Define Data and BatchLoader
+
+We define a new class to load the triplets in the CN15K dataset. It will have a batch function to load the data by batches instead of separate data points. The class also have the corrupt function to corrupt some samples for testing the model.
+
 ```python
 class Data(object):
-    '''The abstract class that defines interfaces for holding all data.
+    '''Interfaces for holding all data.
     '''
     
     def num_cons(self):
@@ -171,7 +174,17 @@ class BatchLoader():
         return neg_hn_batch, neg_rel_hn_batch, neg_t_batch, neg_h_batch, neg_rel_tn_batch, neg_tn_batch
 ```
 
-## Step 4: Define UKGE LOGI Model
+## Step 4: Load data
+```python
+train_data = pd.read_csv('/kaggle/input/cn15k-dataset/train.tsv', sep='\t', header=None, names=['v1','relation','v2','w'])
+this_data = Data()
+this_data.load_data(file_train='/kaggle/input/cn15k-dataset/train.tsv', 
+                file_val='/kaggle/input/cn15k-dataset/val.tsv', 
+                file_psl='/kaggle/input/cn15k-dataset/softlogic.tsv')
+batchloader = BatchLoader(this_data, batch_size, neg_per_positive)
+```
+
+## Step 5: Define UKGE LOGI Model
 
 ```python
 class UKGE_LOGI(object):
@@ -259,16 +272,6 @@ class UKGE_LOGI(object):
         self._saver = tf.train.Saver(max_to_keep=2)  
 ```
 
-## Step 5: Load data
-```python
-train_data = pd.read_csv('/kaggle/input/cn15k-dataset/train.tsv', sep='\t', header=None, names=['v1','relation','v2','w'])
-this_data = Data()
-this_data.load_data(file_train='/kaggle/input/cn15k-dataset/train.tsv', 
-                file_val='/kaggle/input/cn15k-dataset/val.tsv', 
-                file_psl='/kaggle/input/cn15k-dataset/softlogic.tsv')
-batchloader = BatchLoader(this_data, batch_size, neg_per_positive)
-```
-
 ## Step 6: Model
 ```python
 model = UKGE_LOGI(num_rels=this_data.num_rels(),
@@ -335,5 +338,7 @@ for epoch in range(1, epochs + 1):
     this_total_loss = np.sum(epoch_loss) / len(epoch_loss)
     print("Loss of epoch %d = %s" % (epoch, np.sum(this_total_loss)))
 ```
+
+Here's the result:
 
 ![image](https://github.com/hughiephan/UKGE/assets/16631121/f0b4d7f5-62c4-4755-b9a5-85f1e54fef43)

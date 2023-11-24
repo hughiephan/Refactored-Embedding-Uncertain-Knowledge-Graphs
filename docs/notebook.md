@@ -17,7 +17,15 @@ import numpy as np
 tf.disable_v2_behavior()
 ```
 
-## Step 2: Define Data, BatchLoader, and UKGE Model
+## Step 2: Set variables
+```python
+neg_per_positive = 10
+batch_size = 1024
+epochs = 20
+lr=0.001
+```
+
+## Step 3: Define Data, BatchLoader
 ```python
 class Data(object):
     '''The abstract class that defines interfaces for holding all data.
@@ -192,7 +200,7 @@ class BatchLoader():
         return neg_hn_batch, neg_rel_hn_batch, neg_t_batch, neg_h_batch, neg_rel_tn_batch, neg_tn_batch
 ```
 
-## Step 3: Define UKGE Model
+## Step 4: Define UKGE Model
 
 ```python
 class UKGE(object):
@@ -318,14 +326,6 @@ class UKGE_LOGI(UKGE):
     def define_psl_loss(self):
         self.psl_prob = tf.sigmoid(self.w*tf.reduce_sum(tf.multiply(self._soft_r_batch, tf.multiply(self._soft_h_batch, self._soft_t_batch)), 1)+self.b)
         self.compute_psl_loss()
-```
-
-## Step 4: Set variables
-```python
-neg_per_positive = 10
-batch_size = 1024
-epochs = 20
-lr=0.001
 ```
 
 ## Step 5: Load data

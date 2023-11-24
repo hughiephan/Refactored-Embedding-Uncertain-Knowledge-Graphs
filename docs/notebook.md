@@ -292,10 +292,10 @@ model.build()
 
 ## Step 7: Training
 
-A session is created and started using `tf.Session()` and `Session.run` takes the operations we created and data to be fed as parameters and it returns the result.
+A session is created and started using `tf.Session()` and `Session.run` takes the operations we created and data to be fed as parameters and it returns the result. Only after running `tf.global_variables_initializer()` in a session will the variables hold the values you told them to hold.
 
 ```python
-sess = tf.Session()  # show device info
+sess = tf.Session()
 sess.run(tf.global_variables_initializer())
 num_batch = this_data.triples.shape[0] // batch_size
 print('Number of batches per epoch: %d' % num_batch)

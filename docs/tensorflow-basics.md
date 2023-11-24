@@ -30,9 +30,7 @@ with tf.Session() as sess:
 
 ## Tensorflow 2.0
 
-But in Tensorflow 2.0:
-
-Most of the code that uses `Placeholders`, `Sessions`,... are from Tensorflow 1.0 and are removed in Tensorflow 2.0:
+But in Tensorflow 2.0, most of the code that uses `Placeholders`, `Sessions`,... are from Tensorflow 1.0 and are removed in Tensorflow 2.0:
 
 - Remove the graph definition.
 - Remove the session execution.

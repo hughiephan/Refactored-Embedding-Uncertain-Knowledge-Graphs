@@ -336,3 +336,5 @@ for epoch in range(1, epochs + 1):
     print("Loss of epoch %d = %s" % (epoch, np.sum(this_total_loss)))
     # print('MSE on positive instances: %f, MSE on negative samples: %f' % (np.mean(mse_pos), np.mean(mse_neg)))
 ```
+
+![image](https://github.com/hughiephan/UKGE/assets/16631121/f0b4d7f5-62c4-4755-b9a5-85f1e54fef43)

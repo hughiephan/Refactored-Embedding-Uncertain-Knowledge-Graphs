@@ -63,6 +63,10 @@ print(v2.name)  # scope/v2:0
 print(a.name)   # scope/Add:0
 ```
 
+## TF1.0 Get Variable
+
+It is convenient to use the tf.get_variable() function instead of tf.Variable(). The function tf.get_variable() returns the existing variable with the same name if it exists, and creates the variable with the specified shape and initializer if it does not exist.
+
 ## TF1.0 Placeholder
 
 Normally we run like this to start training 

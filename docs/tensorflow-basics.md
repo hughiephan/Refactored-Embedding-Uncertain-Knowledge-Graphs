@@ -87,6 +87,8 @@ with tf.Session() as sess:
   sess.run(y, feed_dict={x: 2}) // 84
 ```
 
+So `tf.Variable` is for trainable variables such as weights and biases for your model. While `tf.placeholder` is used to feed actual training examples.
+
 ## TF1.0 Embedding Lookup
 
 TBD
@@ -103,3 +105,4 @@ TBD
 - https://stackoverflow.com/questions/50497724/tensorflow-when-should-i-use-or-not-use-feed-dict
 - https://stackoverflow.com/questions/35919020/whats-the-difference-of-name-scope-and-a-variable-scope-in-tensorflow
 - https://medium.irfandanish.com/learning-tensorflow-2-use-tf-function-and-forget-about-tf-session-a8117158edd9
+- https://stackoverflow.com/questions/36693740/whats-the-difference-between-tf-placeholder-and-tf-variable

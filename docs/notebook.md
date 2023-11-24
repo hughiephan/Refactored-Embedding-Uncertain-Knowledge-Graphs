@@ -2,7 +2,7 @@
 
 Dataset is from: https://www.kaggle.com/datasets/thala321/cn15k-dataset
 
-## Import libraries
+## Step 1: Import libraries
 
 Even though we install Tensorflow 2.0 as our library, but the legacy code of UKGE is implemented in Tensorflow 1.0 so a quick hack to change tensorflow version to 1.0 is done by setting `tf` as `tensorflow.compat.v1` 
 
@@ -13,7 +13,7 @@ import numpy as np
 tf.disable_v2_behavior()
 ```
 
-## Define Data, BatchLoader, and UKGE Model
+## Step 2: Define Data, BatchLoader, and UKGE Model
 ```python
 class Data(object):
     '''The abstract class that defines interfaces for holding all data.
@@ -312,7 +312,7 @@ class BatchLoader():
         return neg_hn_batch, neg_rel_hn_batch, neg_t_batch, neg_h_batch, neg_rel_tn_batch, neg_tn_batch
 ```
 
-## Set variables
+## Step 3: Set variables
 ```python
 neg_per_positive = 10
 batch_size = 1024
@@ -320,7 +320,7 @@ epochs = 20
 lr=0.001
 ```
 
-## Load data
+## Step 4: Load data
 ```python
 train_data = pd.read_csv('/kaggle/input/cn15k-dataset/train.tsv', sep='\t', header=None, names=['v1','relation','v2','w'])
 this_data = Data()
@@ -330,7 +330,7 @@ this_data.load_data(file_train='/kaggle/input/cn15k-dataset/train.tsv',
 batchloader = BatchLoader(this_data, batch_size, neg_per_positive)
 ```
 
-## Model
+## Step 5: Model
 ```python
 model = UKGE_LOGI(num_rels=this_data.num_rels(),
                 num_cons=this_data.num_cons(),
@@ -340,7 +340,7 @@ model = UKGE_LOGI(num_rels=this_data.num_rels(),
                 p_neg=1)
 ```
 
-## Training
+## Step 6: Training
 
 A session is created and started using `tf.Session()` and `Session.run` takes the operations we created and data to be fed as parameters and it returns the result.
 

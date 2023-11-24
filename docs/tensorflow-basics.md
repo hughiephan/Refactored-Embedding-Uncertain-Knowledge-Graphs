@@ -25,7 +25,7 @@ with g.as_default():
 
 with tf.Session() as sess:
     sess.run(init_op)
-    print(sess.run(y))
+    sess.run(y)
 ```
 
 ## Tensorflow 2.0
@@ -45,7 +45,7 @@ a = tf.constant([[10,10],[11.,1.]])
 x = tf.constant([[1.,0.],[0.,1.]])
 b = tf.Variable(12.)
 y = tf.matmul(a, x) + b
-print(y.numpy())
+y.numpy()
 ```
 
 ## TF1.0 Variable Scope

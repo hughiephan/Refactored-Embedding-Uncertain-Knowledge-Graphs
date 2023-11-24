@@ -2,13 +2,19 @@
 
 Dataset is from: https://www.kaggle.com/datasets/thala321/cn15k-dataset
 
-## Define Data, BatchLoader, and UKGE Model
+## Import libraries
+
+Even though we install Tensorflow 2.0 as our library, but the legacy code of UKGE is implemented in Tensorflow 1.0 so a quick hack to change tensorflow version to 1.0 is done by setting `tf` as `tensorflow.compat.v1` 
+
 ```python
 import tensorflow.compat.v1 as tf
 import pandas as pd
 import numpy as np
 tf.disable_v2_behavior()
+```
 
+## Define Data, BatchLoader, and UKGE Model
+```python
 class Data(object):
     '''The abstract class that defines interfaces for holding all data.
     '''

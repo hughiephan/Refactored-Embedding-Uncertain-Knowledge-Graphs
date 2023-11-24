@@ -1,5 +1,7 @@
 # UKGE Notebook
 
+This Notebook is extracted with only the crucial parts from UKGE Codebase so some parts like Validator, RECT, and other datasets like PPI5k, NL27K was not included for a thorough reading.
+
 Prerequisite:
 - Create a new Notebook in Kaggle: https://kaggle.com
 - Download the dataset from: https://www.kaggle.com/datasets/thala321/cn15k-dataset
@@ -112,7 +114,87 @@ class Data(object):
         '''
         return len(self.rels)
 
+        
+class BatchLoader():
+    def __init__(self, data_obj, batch_size, neg_per_positive):
+        self.this_data = data_obj  # Data() object
+        self.shuffle = True
+        self.batch_size = batch_size
+        self.neg_per_positive = neg_per_positive
+        self.n_soft_samples = 1  # number of samples per batch, n_psl
 
+    def gen_psl_samples(self):
+        # samples from probabilistic soft logic
+        softlogics = self.this_data.soft_logic_triples  # [[A, B, base]]
+        triple_indices = np.random.randint(0, softlogics.shape[0], size=self.n_soft_samples)
+        samples = softlogics[triple_indices,:]
+        soft_h, soft_r, soft_t, soft_lb = samples[:,0].astype(int),samples[:,1].astype(int),samples[:,2].astype(int), samples[:,3]
+        soft_sample_batch = (soft_h, soft_r, soft_t, soft_lb)
+        return soft_sample_batch
+
+    def gen_batch(self, forever=False, shuffle=True, negsampler=None):
+        """
+        :param ht_embedding: for kNN negative sampling
+        :return:
+        """
+        l = self.this_data.triples.shape[0]
+        while True:
+            triples = self.this_data.triples  # np.float64 [[h,r,t,w]]
+            if shuffle:
+                np.random.shuffle(triples)
+            for i in range(0, l, self.batch_size):
+                batch = triples[i: i + self.batch_size, :]
+                if batch.shape[0] < self.batch_size:
+                    batch = np.concatenate((batch, self.this_data.triples[:self.batch_size - batch.shape[0]]),
+                                           axis=0)
+                    assert batch.shape[0] == self.batch_size
+
+                h_batch, r_batch, t_batch, w_batch = batch[:, 0].astype(int), batch[:, 1].astype(int), batch[:,
+                                                                                                       2].astype(
+                    int), batch[:, 3]
+                hrt_batch = batch[:, 0:3].astype(int)
+
+
+                if negsampler is None:
+                    # all_neg_hn_batch = self.corrupt_batch(hrt_batch, self.neg_per_positive, "h")
+                    # all_neg_tn_batch = self.corrupt_batch(hrt_batch, self.neg_per_positive, "t")
+
+                    neg_hn_batch, neg_rel_hn_batch, \
+                    neg_t_batch, neg_h_batch, \
+                    neg_rel_tn_batch, neg_tn_batch \
+                        = self.corrupt_batch(h_batch, r_batch, t_batch)
+                else:
+                    # neg_per_positive controlled by sampler
+                    all_neg_hn_batch = negsampler.knn_negative_batch(hrt_batch, "h")
+                    all_neg_tn_batch = negsampler.knn_negative_batch(hrt_batch, "t")
+
+                yield h_batch.astype(np.int64), r_batch.astype(np.int64), t_batch.astype(
+                    np.int64), w_batch.astype(
+                    np.float32), \
+                      neg_hn_batch.astype(np.int64), neg_rel_hn_batch.astype(np.int64), \
+                      neg_t_batch.astype(np.int64), neg_h_batch.astype(np.int64), \
+                      neg_rel_tn_batch.astype(np.int64), neg_tn_batch.astype(np.int64)
+            if not forever:
+                break
+
+    def corrupt_batch(self, h_batch, r_batch, t_batch):
+        N = self.this_data.num_cons()  # number of entities
+
+        neg_hn_batch = np.random.randint(0, N, size=(
+        self.batch_size, self.neg_per_positive))  # random index without filtering
+        neg_rel_hn_batch = np.tile(r_batch, (self.neg_per_positive, 1)).transpose()  # copy
+        neg_t_batch = np.tile(t_batch, (self.neg_per_positive, 1)).transpose()
+
+        neg_h_batch = np.tile(h_batch, (self.neg_per_positive, 1)).transpose()
+        neg_rel_tn_batch = neg_rel_hn_batch
+        neg_tn_batch = np.random.randint(0, N, size=(self.batch_size, self.neg_per_positive))
+
+        return neg_hn_batch, neg_rel_hn_batch, neg_t_batch, neg_h_batch, neg_rel_tn_batch, neg_tn_batch
+```
+
+## Step 3: Define UKGE Model
+
+```python
 class UKGE(object):
     '''
     TensorFlow-related things.
@@ -236,85 +318,9 @@ class UKGE_LOGI(UKGE):
     def define_psl_loss(self):
         self.psl_prob = tf.sigmoid(self.w*tf.reduce_sum(tf.multiply(self._soft_r_batch, tf.multiply(self._soft_h_batch, self._soft_t_batch)), 1)+self.b)
         self.compute_psl_loss()
-        
-class BatchLoader():
-    def __init__(self, data_obj, batch_size, neg_per_positive):
-        self.this_data = data_obj  # Data() object
-        self.shuffle = True
-        self.batch_size = batch_size
-        self.neg_per_positive = neg_per_positive
-        self.n_soft_samples = 1  # number of samples per batch, n_psl
-
-    def gen_psl_samples(self):
-        # samples from probabilistic soft logic
-        softlogics = self.this_data.soft_logic_triples  # [[A, B, base]]
-        triple_indices = np.random.randint(0, softlogics.shape[0], size=self.n_soft_samples)
-        samples = softlogics[triple_indices,:]
-        soft_h, soft_r, soft_t, soft_lb = samples[:,0].astype(int),samples[:,1].astype(int),samples[:,2].astype(int), samples[:,3]
-        soft_sample_batch = (soft_h, soft_r, soft_t, soft_lb)
-        return soft_sample_batch
-
-    def gen_batch(self, forever=False, shuffle=True, negsampler=None):
-        """
-        :param ht_embedding: for kNN negative sampling
-        :return:
-        """
-        l = self.this_data.triples.shape[0]
-        while True:
-            triples = self.this_data.triples  # np.float64 [[h,r,t,w]]
-            if shuffle:
-                np.random.shuffle(triples)
-            for i in range(0, l, self.batch_size):
-                batch = triples[i: i + self.batch_size, :]
-                if batch.shape[0] < self.batch_size:
-                    batch = np.concatenate((batch, self.this_data.triples[:self.batch_size - batch.shape[0]]),
-                                           axis=0)
-                    assert batch.shape[0] == self.batch_size
-
-                h_batch, r_batch, t_batch, w_batch = batch[:, 0].astype(int), batch[:, 1].astype(int), batch[:,
-                                                                                                       2].astype(
-                    int), batch[:, 3]
-                hrt_batch = batch[:, 0:3].astype(int)
-
-
-                if negsampler is None:
-                    # all_neg_hn_batch = self.corrupt_batch(hrt_batch, self.neg_per_positive, "h")
-                    # all_neg_tn_batch = self.corrupt_batch(hrt_batch, self.neg_per_positive, "t")
-
-                    neg_hn_batch, neg_rel_hn_batch, \
-                    neg_t_batch, neg_h_batch, \
-                    neg_rel_tn_batch, neg_tn_batch \
-                        = self.corrupt_batch(h_batch, r_batch, t_batch)
-                else:
-                    # neg_per_positive controlled by sampler
-                    all_neg_hn_batch = negsampler.knn_negative_batch(hrt_batch, "h")
-                    all_neg_tn_batch = negsampler.knn_negative_batch(hrt_batch, "t")
-
-                yield h_batch.astype(np.int64), r_batch.astype(np.int64), t_batch.astype(
-                    np.int64), w_batch.astype(
-                    np.float32), \
-                      neg_hn_batch.astype(np.int64), neg_rel_hn_batch.astype(np.int64), \
-                      neg_t_batch.astype(np.int64), neg_h_batch.astype(np.int64), \
-                      neg_rel_tn_batch.astype(np.int64), neg_tn_batch.astype(np.int64)
-            if not forever:
-                break
-
-    def corrupt_batch(self, h_batch, r_batch, t_batch):
-        N = self.this_data.num_cons()  # number of entities
-
-        neg_hn_batch = np.random.randint(0, N, size=(
-        self.batch_size, self.neg_per_positive))  # random index without filtering
-        neg_rel_hn_batch = np.tile(r_batch, (self.neg_per_positive, 1)).transpose()  # copy
-        neg_t_batch = np.tile(t_batch, (self.neg_per_positive, 1)).transpose()
-
-        neg_h_batch = np.tile(h_batch, (self.neg_per_positive, 1)).transpose()
-        neg_rel_tn_batch = neg_rel_hn_batch
-        neg_tn_batch = np.random.randint(0, N, size=(self.batch_size, self.neg_per_positive))
-
-        return neg_hn_batch, neg_rel_hn_batch, neg_t_batch, neg_h_batch, neg_rel_tn_batch, neg_tn_batch
 ```
 
-## Step 3: Set variables
+## Step 4: Set variables
 ```python
 neg_per_positive = 10
 batch_size = 1024
@@ -322,7 +328,7 @@ epochs = 20
 lr=0.001
 ```
 
-## Step 4: Load data
+## Step 5: Load data
 ```python
 train_data = pd.read_csv('/kaggle/input/cn15k-dataset/train.tsv', sep='\t', header=None, names=['v1','relation','v2','w'])
 this_data = Data()
@@ -332,7 +338,7 @@ this_data.load_data(file_train='/kaggle/input/cn15k-dataset/train.tsv',
 batchloader = BatchLoader(this_data, batch_size, neg_per_positive)
 ```
 
-## Step 5: Model
+## Step 6: Model
 ```python
 model = UKGE_LOGI(num_rels=this_data.num_rels(),
                 num_cons=this_data.num_cons(),
@@ -342,7 +348,7 @@ model = UKGE_LOGI(num_rels=this_data.num_rels(),
                 p_neg=1)
 ```
 
-## Step 6: Training
+## Step 7: Training
 
 A session is created and started using `tf.Session()` and `Session.run` takes the operations we created and data to be fed as parameters and it returns the result.
 

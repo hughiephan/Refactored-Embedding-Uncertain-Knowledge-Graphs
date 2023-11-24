@@ -30,6 +30,21 @@ lr=0.001
 class Data(object):
     '''The abstract class that defines interfaces for holding all data.
     '''
+    
+    def num_cons(self):
+        '''Returns number of ontologies.
+
+        This means all ontologies have index that 0 <= index < num_onto().
+        '''
+        return len(self.cons)
+
+    def num_rels(self):
+        '''Returns number of relations.
+
+        This means all relations have index that 0 <= index < num_rels().
+        Note that we consider *ALL* relations, e.g. $R_O$, $R_h$ and $R_{tr}$.
+        '''
+        return len(self.rels)
 
     def __init__(self):
         self.cons = [] # Concept vocab
@@ -41,12 +56,10 @@ class Data(object):
         self.triples = np.array([0])  # training dataset
         self.val_triples = np.array([0])  # validation dataset
         self.soft_logic_triples = np.array([0])
-
         # (h,r,t) tuples(int), no w
         # set containing train, val, test (for negative sampling).
         self.triples_record = set([])
         self.weights = np.array([0])
-
         self.neg_triples = np.array([0])
         # map for sigma
         # head per tail and tail per head (for each relation). used for bernoulli negative sampling
@@ -64,7 +77,6 @@ class Data(object):
         last_r = -1
         hr_map = {}
         tr_map = {}
-
         for line in open(filename):
             line = line.rstrip(line_end).split(splitter)
             if self.index_cons.get(line[0]) == None:
@@ -83,19 +95,15 @@ class Data(object):
             r = self.index_rels[line[1]]
             t = self.index_cons[line[2]]
             w = float(line[3])
-
             triples.append([h, r, t, w])
             self.triples_record.add((h, r, t))
         return np.array(triples)
 
     def load_data(self, file_train, file_val, file_psl=None, splitter='\t', line_end='\n'):
-
         self.triples = self.load_triples(file_train, splitter, line_end)
         self.val_triples = self.load_triples(file_val, splitter, line_end)
-
         if file_psl is not None:
             self.soft_logic_triples = self.load_triples(file_psl, splitter, line_end)
-
         # calculate tph and hpt
         tph_array = np.zeros((len(self.rels), len(self.cons)))
         hpt_array = np.zeros((len(self.rels), len(self.cons)))
@@ -106,22 +114,6 @@ class Data(object):
         self.tph = np.mean(tph_array, axis=1)
         self.hpt = np.mean(hpt_array, axis=1)
         # print("-- total number of entities:", len(self.cons))
-
-    def num_cons(self):
-        '''Returns number of ontologies.
-
-        This means all ontologies have index that 0 <= index < num_onto().
-        '''
-        return len(self.cons)
-
-    def num_rels(self):
-        '''Returns number of relations.
-
-        This means all relations have index that 0 <= index < num_rels().
-        Note that we consider *ALL* relations, e.g. $R_O$, $R_h$ and $R_{tr}$.
-        '''
-        return len(self.rels)
-
         
 class BatchLoader():
     def __init__(self, data_obj, batch_size, neg_per_positive):
@@ -153,50 +145,29 @@ class BatchLoader():
             for i in range(0, l, self.batch_size):
                 batch = triples[i: i + self.batch_size, :]
                 if batch.shape[0] < self.batch_size:
-                    batch = np.concatenate((batch, self.this_data.triples[:self.batch_size - batch.shape[0]]),
-                                           axis=0)
+                    batch = np.concatenate((batch, self.this_data.triples[:self.batch_size - batch.shape[0]]), axis=0)
                     assert batch.shape[0] == self.batch_size
-
-                h_batch, r_batch, t_batch, w_batch = batch[:, 0].astype(int), batch[:, 1].astype(int), batch[:,
-                                                                                                       2].astype(
-                    int), batch[:, 3]
+                h_batch, r_batch, t_batch, w_batch = batch[:, 0].astype(int), batch[:, 1].astype(int), batch[:, 2].astype(int), batch[:, 3]
                 hrt_batch = batch[:, 0:3].astype(int)
-
-
                 if negsampler is None:
-                    # all_neg_hn_batch = self.corrupt_batch(hrt_batch, self.neg_per_positive, "h")
-                    # all_neg_tn_batch = self.corrupt_batch(hrt_batch, self.neg_per_positive, "t")
-
-                    neg_hn_batch, neg_rel_hn_batch, \
-                    neg_t_batch, neg_h_batch, \
-                    neg_rel_tn_batch, neg_tn_batch \
-                        = self.corrupt_batch(h_batch, r_batch, t_batch)
+                    neg_hn_batch, neg_rel_hn_batch, neg_t_batch, neg_h_batch, neg_rel_tn_batch, neg_tn_batch = self.corrupt_batch(h_batch, r_batch, t_batch)
                 else:
                     # neg_per_positive controlled by sampler
                     all_neg_hn_batch = negsampler.knn_negative_batch(hrt_batch, "h")
                     all_neg_tn_batch = negsampler.knn_negative_batch(hrt_batch, "t")
-
-                yield h_batch.astype(np.int64), r_batch.astype(np.int64), t_batch.astype(
-                    np.int64), w_batch.astype(
-                    np.float32), \
-                      neg_hn_batch.astype(np.int64), neg_rel_hn_batch.astype(np.int64), \
-                      neg_t_batch.astype(np.int64), neg_h_batch.astype(np.int64), \
-                      neg_rel_tn_batch.astype(np.int64), neg_tn_batch.astype(np.int64)
+                yield h_batch.astype(np.int64), r_batch.astype(np.int64), t_batch.astype(np.int64), w_batch.astype(np.float32), neg_hn_batch.astype(np.int64), neg_rel_hn_batch.astype(np.int64), neg_t_batch.astype(np.int64), neg_h_batch.astype(np.int64), neg_rel_tn_batch.astype(np.int64), neg_tn_batch.astype(np.int64)
             if not forever:
                 break
 
     def corrupt_batch(self, h_batch, r_batch, t_batch):
         N = self.this_data.num_cons()  # number of entities
-
         neg_hn_batch = np.random.randint(0, N, size=(
         self.batch_size, self.neg_per_positive))  # random index without filtering
         neg_rel_hn_batch = np.tile(r_batch, (self.neg_per_positive, 1)).transpose()  # copy
         neg_t_batch = np.tile(t_batch, (self.neg_per_positive, 1)).transpose()
-
         neg_h_batch = np.tile(h_batch, (self.neg_per_positive, 1)).transpose()
         neg_rel_tn_batch = neg_rel_hn_batch
         neg_tn_batch = np.random.randint(0, N, size=(self.batch_size, self.neg_per_positive))
-
         return neg_hn_batch, neg_rel_hn_batch, neg_t_batch, neg_h_batch, neg_rel_tn_batch, neg_tn_batch
 ```
 

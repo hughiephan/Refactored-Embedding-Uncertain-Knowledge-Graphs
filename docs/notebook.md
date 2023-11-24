@@ -222,7 +222,6 @@ class UKGE_LOGI(object):
         self._epoch_loss = 0 
         self._soft_size = 1
         self._prior_psl = 0
-        self.build()
 
     def build(self):
         tf.reset_default_graph()
@@ -286,7 +285,7 @@ class UKGE_LOGI(object):
         self._opt = opt = tf.train.AdamOptimizer(lr)
         self._gradient = gradient = opt.compute_gradients(self._A_loss) 
         self._train_op = opt.apply_gradients(gradient)
-        self._saver = tf.train.Saver(max_to_keep=2)    
+        self._saver = tf.train.Saver(max_to_keep=2)  
 ```
 
 ## Step 5: Load data
@@ -307,6 +306,7 @@ model = UKGE_LOGI(num_rels=this_data.num_rels(),
                 batch_size=this_data.batch_size, 
                 neg_per_positive=10, 
                 p_neg=1)
+model.build()
 ```
 
 ## Step 7: Training

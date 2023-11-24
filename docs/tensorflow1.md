@@ -80,3 +80,4 @@ with tf.Session() as sess:
 ## Reference
 - https://stackoverflow.com/questions/50497724/tensorflow-when-should-i-use-or-not-use-feed-dict
 - https://stackoverflow.com/questions/35919020/whats-the-difference-of-name-scope-and-a-variable-scope-in-tensorflow
+- https://medium.irfandanish.com/learning-tensorflow-2-use-tf-function-and-forget-about-tf-session-a8117158edd9

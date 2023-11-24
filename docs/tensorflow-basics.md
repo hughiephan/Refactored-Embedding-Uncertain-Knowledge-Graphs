@@ -50,19 +50,7 @@ y = tf.matmul(a, x) + b
 print(y.numpy())
 ```
 
-## tf.global_variables_initializer
-
-TBD
-
-## tf.train.Saver
-
-TBD
-
-## TF Parts
-
-TBD
-
-## TF Variable Scope
+## TF1.0 Variable Scope
 
 Variable sharing is a mechanism in TensorFlow that allows for sharing variables accessed in different parts of the code without passing references to the variable around. `tf.variable_scope()` manages namespaces for names passed to `tf.get_variable()`.
 
@@ -76,10 +64,6 @@ print(v1.name)  # scope/v1:0
 print(v2.name)  # scope/v2:0
 print(a.name)   # scope/Add:0
 ```
-
-## TF Embedding Lookup
-
-TBD
 
 ## TF1.0 Placeholder
 
@@ -100,6 +84,18 @@ y = x * 42
 with tf.Session() as sess:
   sess.run(y, feed_dict={x: 2}) // 84
 ```
+
+## TF1.0 Embedding Lookup
+
+TBD
+
+## TF1.0 Global Variables Initializer
+
+TBD
+
+## TF1.0 Train Saver
+
+TBD
 
 ## Reference
 - https://stackoverflow.com/questions/50497724/tensorflow-when-should-i-use-or-not-use-feed-dict

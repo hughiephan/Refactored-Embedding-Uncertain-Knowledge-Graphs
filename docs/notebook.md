@@ -1,5 +1,7 @@
 # UKGE Notebook
 
+![image](https://github.com/hughiephan/UKGE/assets/16631121/8f6e9632-3342-461c-b9cb-4611d8a29c88)
+
 This Notebook is extracted with only the crucial parts from UKGE Codebase so some parts like Validator, RECT, @property and other datasets like PPI5k, NL27K was not included for a thorough understanding.
 
 Prerequisite:

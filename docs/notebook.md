@@ -200,27 +200,27 @@ class UKGE_LOGI(object):
             # Variables (matrix of embeddings/transformations)
             self._ht = ht = tf.get_variable(name='ht', shape=[self._num_cons, self._dim], dtype=tf.float32)
             self._r = r = tf.get_variable(name='r', shape=[self._num_rels, self._dim], dtype=tf.float32)
-            self._A_h_index = A_h_index = tf.placeholder(dtype=tf.int64, shape=[self._batch_size], name='A_h_index')
-            self._A_r_index = A_r_index = tf.placeholder(dtype=tf.int64, shape=[self._batch_size], name='A_r_index')
-            self._A_t_index = A_t_index = tf.placeholder(dtype=tf.int64, shape=[self._batch_size], name='A_t_index')
+            self._A_h_index = tf.placeholder(dtype=tf.int64, shape=[self._batch_size], name='A_h_index')
+            self._A_r_index = tf.placeholder(dtype=tf.int64, shape=[self._batch_size], name='A_r_index')
+            self._A_t_index = tf.placeholder(dtype=tf.int64, shape=[self._batch_size], name='A_t_index')
             # for uncertain graph
             self._A_w = tf.placeholder(dtype=tf.float32, shape=[self._batch_size], name='_A_w')
-            self._A_neg_hn_index = A_neg_hn_index = tf.placeholder(dtype=tf.int64, shape=(self._batch_size, self._neg_per_positive), name='A_neg_hn_index')
-            self._A_neg_rel_hn_index = A_neg_rel_hn_index = tf.placeholder(dtype=tf.int64, shape=(self._batch_size, self._neg_per_positive), name='A_neg_rel_hn_index')
-            self._A_neg_t_index = A_neg_t_index = tf.placeholder(dtype=tf.int64, shape=(self._batch_size, self._neg_per_positive), name='A_neg_t_index')
-            self._A_neg_h_index = A_neg_h_index = tf.placeholder(dtype=tf.int64, shape=(self._batch_size, self._neg_per_positive), name='A_neg_h_index')
-            self._A_neg_rel_tn_index = A_neg_rel_tn_index = tf.placeholder(dtype=tf.int64, shape=(self._batch_size, self._neg_per_positive), name='A_neg_rel_tn_index')
-            self._A_neg_tn_index = A_neg_tn_index = tf.placeholder(dtype=tf.int64, shape=(self._batch_size, self._neg_per_positive), name='A_neg_tn_index')
+            self._A_neg_hn_index = tf.placeholder(dtype=tf.int64, shape=(self._batch_size, self._neg_per_positive), name='A_neg_hn_index')
+            self._A_neg_rel_hn_index = tf.placeholder(dtype=tf.int64, shape=(self._batch_size, self._neg_per_positive), name='A_neg_rel_hn_index')
+            self._A_neg_t_index = tf.placeholder(dtype=tf.int64, shape=(self._batch_size, self._neg_per_positive), name='A_neg_t_index')
+            self._A_neg_h_index = tf.placeholder(dtype=tf.int64, shape=(self._batch_size, self._neg_per_positive), name='A_neg_h_index')
+            self._A_neg_rel_tn_index = tf.placeholder(dtype=tf.int64, shape=(self._batch_size, self._neg_per_positive), name='A_neg_rel_tn_index')
+            self._A_neg_tn_index = tf.placeholder(dtype=tf.int64, shape=(self._batch_size, self._neg_per_positive), name='A_neg_tn_index')
             # no normalization
-            self._h_batch = tf.nn.embedding_lookup(ht, A_h_index)
-            self._t_batch = tf.nn.embedding_lookup(ht, A_t_index)
-            self._r_batch = tf.nn.embedding_lookup(r, A_r_index)
-            self._neg_hn_con_batch = tf.nn.embedding_lookup(ht, A_neg_hn_index)
-            self._neg_rel_hn_batch = tf.nn.embedding_lookup(r, A_neg_rel_hn_index)
-            self._neg_t_con_batch = tf.nn.embedding_lookup(ht, A_neg_t_index)
-            self._neg_h_con_batch = tf.nn.embedding_lookup(ht, A_neg_h_index)
-            self._neg_rel_tn_batch = tf.nn.embedding_lookup(r, A_neg_rel_tn_index)
-            self._neg_tn_con_batch = tf.nn.embedding_lookup(ht, A_neg_tn_index)
+            self._h_batch = tf.nn.embedding_lookup(ht, self._A_h_index)
+            self._t_batch = tf.nn.embedding_lookup(ht, self._A_t_index)
+            self._r_batch = tf.nn.embedding_lookup(r, self._A_r_index)
+            self._neg_hn_con_batch = tf.nn.embedding_lookup(ht, self._A_neg_hn_index)
+            self._neg_rel_hn_batch = tf.nn.embedding_lookup(r, self._A_neg_rel_hn_index)
+            self._neg_t_con_batch = tf.nn.embedding_lookup(ht, self._A_neg_t_index)
+            self._neg_h_con_batch = tf.nn.embedding_lookup(ht, self._A_neg_h_index)
+            self._neg_rel_tn_batch = tf.nn.embedding_lookup(r, self._A_neg_rel_tn_index)
+            self._neg_tn_con_batch = tf.nn.embedding_lookup(ht, self._A_neg_tn_index)
             # psl batches
             self._soft_h_index = tf.placeholder(dtype=tf.int64, shape=[self._soft_size], name='soft_h_index')
             self._soft_r_index = tf.placeholder(dtype=tf.int64, shape=[self._soft_size], name='soft_r_index')
@@ -234,14 +234,14 @@ class UKGE_LOGI(object):
         # Compute Main Loss
         self.w = tf.Variable(0.0, name="weights")
         self.b = tf.Variable(0.0, name="bias")
-        self._htr = htr = tf.reduce_sum(tf.multiply(self._r_batch, tf.multiply(self._h_batch, self._t_batch, "element_wise_multiply"),"r_product"), 1)
-        self._f_prob_h = f_prob_h = tf.sigmoid(self.w * htr + self.b) # Logistic regression
-        self._f_score_h = f_score_h = tf.square(tf.subtract(f_prob_h, self._A_w))
-        self._f_prob_hn = f_prob_hn = tf.sigmoid(self.w * (tf.reduce_sum( tf.multiply(self._neg_rel_hn_batch, tf.multiply(self._neg_hn_con_batch, self._neg_t_con_batch)), 2)) + self.b)
-        self._f_score_hn = f_score_hn = tf.reduce_mean(tf.square(f_prob_hn), 1)
-        self._f_prob_tn = f_prob_tn = tf.sigmoid(self.w * (tf.reduce_sum(tf.multiply(self._neg_rel_tn_batch, tf.multiply(self._neg_h_con_batch, self._neg_tn_con_batch)), 2)) + self.b)
-        self._f_score_tn = f_score_tn = tf.reduce_mean(tf.square(f_prob_tn), 1)
-        self.main_loss = (tf.reduce_sum(tf.add(tf.divide(tf.add(f_score_tn, f_score_hn), 2) * self._p_neg, f_score_h))) / self._batch_size
+        self._htr = tf.reduce_sum(tf.multiply(self._r_batch, tf.multiply(self._h_batch, self._t_batch, "element_wise_multiply"),"r_product"), 1)
+        self._f_prob_h = tf.sigmoid(self.w * self._htr + self.b) # Logistic regression
+        self._f_score_h = tf.square(tf.subtract(self._f_prob_h, self._A_w))
+        self._f_prob_hn = tf.sigmoid(self.w * (tf.reduce_sum( tf.multiply(self._neg_rel_hn_batch, tf.multiply(self._neg_hn_con_batch, self._neg_t_con_batch)), 2)) + self.b)
+        self._f_score_hn = tf.reduce_mean(tf.square(self._f_prob_hn), 1)
+        self._f_prob_tn = tf.sigmoid(self.w * (tf.reduce_sum(tf.multiply(self._neg_rel_tn_batch, tf.multiply(self._neg_h_con_batch, self._neg_tn_con_batch)), 2)) + self.b)
+        self._f_score_tn = tf.reduce_mean(tf.square(self._f_prob_tn), 1)
+        self.main_loss = (tf.reduce_sum(tf.add(tf.divide(tf.add(self._f_score_tn, self._f_score_hn), 2) * self._p_neg, self._f_score_h))) / self._batch_size
         
         # Compute PSL Loss
         self.psl_prob = tf.sigmoid(self.w*tf.reduce_sum(tf.multiply(self._soft_r_batch, tf.multiply(self._soft_h_batch, self._soft_t_batch)), 1)+self.b)
@@ -252,10 +252,10 @@ class UKGE_LOGI(object):
 
         # Optimizer
         self._A_loss = tf.add(self.main_loss, self.psl_loss)
-        self._lr = lr = tf.placeholder(tf.float32)
-        self._opt = opt = tf.train.AdamOptimizer(lr)
-        self._gradient = gradient = opt.compute_gradients(self._A_loss) 
-        self._train_op = opt.apply_gradients(gradient)
+        self._lr = tf.placeholder(tf.float32)
+        self._opt = tf.train.AdamOptimizer(self._lr)
+        self._gradient = self._opt.compute_gradients(self._A_loss) 
+        self._train_op = self._opt.apply_gradients(self._gradient)
         self._saver = tf.train.Saver(max_to_keep=2)  
 ```
 

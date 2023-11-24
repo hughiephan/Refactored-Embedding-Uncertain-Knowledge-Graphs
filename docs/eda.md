@@ -23,11 +23,25 @@ relation_string_array = df['relation_string'].unique()
 for relation_string in relation_string_array:
     new_df = df.loc[df['relation_string'] == relation_string].head(2)
     G = nx.from_pandas_edgelist(new_df, 'entity_string_1', 'entity_string_2', edge_attr='relation_string', create_using=nx.DiGraph())
-    plt.figure(figsize=(8, 6))
+    plt.figure(figsize=(4, 3))
     pos = nx.spring_layout(G)  # Position nodes using Fruchterman-Reingold force-directed algorithm
     nx.draw(G, pos, with_labels=True, node_size=1000, node_color='skyblue', font_weight='bold', font_size=12, arrows=True)
     edge_labels = {(u, v): d['relation_string'] for u, v, d in G.edges(data=True)}
     nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels, font_color='red')
     plt.title('Relation: ' + relation_string)
     plt.show()
+```
+
+## Step:
+```python
+new_entity = 'dog'
+new_df = df.loc[df['entity_string_2'] == new_entity].drop_duplicates(subset=['relation_string'])
+G = nx.from_pandas_edgelist(new_df, 'entity_string_1', 'entity_string_2', edge_attr='relation_string', create_using=nx.DiGraph())
+plt.figure(figsize=(8, 6))
+pos = nx.spring_layout(G)  # Position nodes using Fruchterman-Reingold force-directed algorithm
+nx.draw(G, pos, with_labels=True, node_size=1000, node_color='skyblue', font_weight='bold', font_size=12, arrows=True)
+edge_labels = {(u, v): d['relation_string'] for u, v, d in G.edges(data=True)}
+nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels, font_color='red')
+plt.title('Entity: ' + new_entity)
+plt.show()
 ```

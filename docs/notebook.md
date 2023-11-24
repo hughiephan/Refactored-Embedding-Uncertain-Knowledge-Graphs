@@ -176,7 +176,6 @@ class BatchLoader():
 
 ## Step 4: Load data
 ```python
-train_data = pd.read_csv('/kaggle/input/cn15k-dataset/train.tsv', sep='\t', header=None, names=['v1','relation','v2','w'])
 this_data = Data()
 this_data.load_data(file_train='/kaggle/input/cn15k-dataset/train.tsv', 
                 file_val='/kaggle/input/cn15k-dataset/val.tsv', 

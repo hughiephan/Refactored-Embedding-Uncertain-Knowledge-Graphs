@@ -200,7 +200,7 @@ class BatchLoader():
         return neg_hn_batch, neg_rel_hn_batch, neg_t_batch, neg_h_batch, neg_rel_tn_batch, neg_tn_batch
 ```
 
-## Step 4: Define UKGE Model
+## Step 4: Define UKGE LOGI Model
 
 ```python
 class UKGE_LOGI(object):

@@ -182,6 +182,7 @@ this_data = Data()
 this_data.load_data(file_train='/kaggle/input/cn15k-dataset/train.tsv', 
                 file_val='/kaggle/input/cn15k-dataset/val.tsv', 
                 file_psl='/kaggle/input/cn15k-dataset/softlogic.tsv')
+// this_data.corrupt_batch # We need add this one
 batchloader = BatchLoader(this_data, batch_size, neg_per_positive)
 ```
 

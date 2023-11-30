@@ -261,6 +261,8 @@ $$f_{prob-h} = \sigma(w * htr + b)$$
 
 $$f_{score-h} = (f_{prob-h} - A_w)^2$$
 
+$$f_{prob-hn} = \sigma ( w \cdot \sum_{i=1}^{n} ( neg-rel_{hn_i} \cdot \left(neg-con_{hn_i} \cdot neg-con_{t_i} \right) ) + b)$$
+
 ```python
         ...
         self._htr = tf.reduce_sum(tf.multiply(self._r_batch, tf.multiply(self._h_batch, self._t_batch, "element_wise_multiply"),"r_product"), 1)

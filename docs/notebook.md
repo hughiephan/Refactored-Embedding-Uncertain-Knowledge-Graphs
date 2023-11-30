@@ -272,9 +272,9 @@ $$\text{psl-error-each} = ( \max ( w + \text{prior-psl0} - \text{psl-prob}, 0 ))
 
 $$\text{psl-mse} = \frac{1}{N} \sum_{i=1}^{N} \text{psl-error-each}_i$$
 
-$$\text{psl-loss} = \text{psl-mse} \cdot \text{_p_psl}$$
+$$\text{psl-loss} = \text{psl-mse} \cdot \text{p-psl}$$
 
-With $\text{_p_psl}$ is coefficient
+With $\text{p-psl}$ is coefficient
 
 ```
         ....

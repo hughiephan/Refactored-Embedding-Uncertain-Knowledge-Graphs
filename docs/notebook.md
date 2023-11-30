@@ -270,7 +270,7 @@ $$\text{psl-prob} = \(\sigma ( w \cdot \sum_{i=1}^{n} ( \text{R}_i \cdot ( \text
 
 $$\text{psl-error-each} = ( \max ( w + \text{prior-psl0} - \text{psl-prob}, 0 ))^2$$ 
 
-$$\text{psl_mse} = \frac{1}{N} \sum_{i=1}^{N} \text{psl-error-each}_i$$
+$$\text{psl-mse} = \frac{1}{N} \sum_{i=1}^{N} \text{psl-error-each}_i$$
 
 ```
         ....

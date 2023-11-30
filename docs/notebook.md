@@ -257,9 +257,9 @@ class UKGE_LOGI(object):
 
 $$htr = \sum_{i=1}^{n} ( R_i \cdot (H_i \odot T_i ))$$
 
-$$f_{prob-h} = \sigma(w * htr + b)$$
+$$f_{prob_h} = \sigma(w * htr + b)$$
 
-$$f_{score-h} = (f_{prob-h} - A_w)^2$$
+$$f_{score_h} = (f_{prob_h} - A_w)^2$$
 
 $$f_{prob_{hn}} = \sigma ( w \cdot \sum_{i=1}^{n} ( negrel_{hn_i} \cdot \left(negcon_{hn_i} \cdot negcon_{t_i} \right) ) + b)$$
 

@@ -166,8 +166,7 @@ class BatchLoader():
 
     def corrupt_batch(self, h_batch, r_batch, t_batch):
         N = self.this_data.num_cons()  # number of entities
-        neg_hn_batch = np.random.randint(0, N, size=(
-        self.batch_size, self.neg_per_positive))  # random index without filtering
+        neg_hn_batch = np.random.randint(0, N, size=(self.batch_size, self.neg_per_positive))  # random index without filtering
         neg_rel_hn_batch = np.tile(r_batch, (self.neg_per_positive, 1)).transpose()  # copy
         neg_t_batch = np.tile(t_batch, (self.neg_per_positive, 1)).transpose()
         neg_h_batch = np.tile(h_batch, (self.neg_per_positive, 1)).transpose()

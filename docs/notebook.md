@@ -261,7 +261,9 @@ $$f_{prob-h} = \sigma(w * htr + b)$$
 
 $$f_{score-h} = (f_{prob-h} - A_w)^2$$
 
-$$f_{prob-hn} = \sigma ( w \cdot \sum_{i=1}^{n} ( negrel_{hn_i} \cdot \left(negcon_{hn_i} \cdot negcon_{t_i} \right) ) + b)$$
+$$f_{prob_{hn}} = \sigma ( w \cdot \sum_{i=1}^{n} ( negrel_{hn_i} \cdot \left(negcon_{hn_i} \cdot negcon_{t_i} \right) ) + b)$$
+
+$$f_{score_{hn}} = \frac{1}{n} \sum_{i=1}^{n} (f_{prob_{hn_i}})^2$$
 
 ```python
         ...

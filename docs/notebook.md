@@ -289,7 +289,7 @@ $$loss_{main} = \frac{\sum (\frac{f_{score_{tn}} + f_{score_{hn}}}{2} \times p_{
 
 $$prob_{psl} = \(\sigma ( w \cdot \sum_{i=1}^{n} ( \text{R}_i \cdot ( \text{H}_i \cdot \text{T}_i ) ) + b )\)$$
 
-$$\text{psl-error-each} = ( \max ( w + \text{prior-psl0} - prob_{psl}, 0 ))^2$$ 
+$$\text{psl-error-each} = ( \max ( 0, w + \text{prior-psl0} - prob_{psl}))^2$$ 
 
 $$mse_{psl} = \frac{1}{N} \sum_{i=1}^{N} \text{psl-error-each}_i$$
 

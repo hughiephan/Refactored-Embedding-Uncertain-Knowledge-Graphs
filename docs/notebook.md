@@ -265,6 +265,10 @@ $$f_{prob_{hn}} = \sigma ( w \cdot \sum_{i=1}^{n} ( negrel_{hn_i} \cdot \left(ne
 
 $$f_{score_{hn}} = \frac{1}{n} \sum_{i=1}^{n} (f_{prob_{hn_i}})^2$$
 
+$$f_{prob_{tn}} = \sigma ( w \cdot \sum_{i=1}^{n} ( negrel_{tn_i} \cdot \left(negcon_{h_i} \cdot negcon_{tn_i} \right) ) + b)$$
+
+$$f_{score_{tn}} = \frac{1}{n} \sum_{i=1}^{n} (f_{prob_{tn_i}})^2$$
+
 ```python
         ...
         self._htr = tf.reduce_sum(tf.multiply(self._r_batch, tf.multiply(self._h_batch, self._t_batch, "element_wise_multiply"),"r_product"), 1)

@@ -257,7 +257,9 @@ class UKGE_LOGI(object):
 
 $$htr = \sum_{i=1}^{n} ( R_i \cdot (H_i \odot T_i ))$$
 
-$$\text{f-prob-h} = \sigma(w * htr + b)$$
+$$f_{\text{prob\_h}} = \sigma(w * htr + b)$$
+
+$$f_{\text{score\_h}} = (f_{\text{prob\_h}} - A_w)^2$$
 
 ```python
         ...

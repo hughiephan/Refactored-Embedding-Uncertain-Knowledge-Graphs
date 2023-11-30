@@ -259,7 +259,7 @@ $$htr = \sum_{i=1}^{n} ( R_i \cdot (H_i \odot T_i ))$$
 
 $$f_{prob-h} = \sigma(w * htr + b)$$
 
-$$f_{score-h} = (f_{\text{prob\_h}} - A_w)^2$$
+$$f_{score-h} = (f_{prob-h} - A_w)^2$$
 
 ```python
         ...

@@ -269,6 +269,8 @@ $$f_{prob_{tn}} = \sigma ( w \cdot \sum_{i=1}^{n} ( negrel_{tn_i} \cdot \left(ne
 
 $$f_{score_{tn}} = \frac{1}{n} \sum_{i=1}^{n} (f_{prob_{tn_i}})^2$$
 
+$$loss_{main} = \frac{\sum (\frac{f_{score_{tn}} + f_{score_{hn}}}{2} \times p_{neg} + f_{score_h} )}{batchsize}$$
+
 ```python
         ...
         self._htr = tf.reduce_sum(tf.multiply(self._r_batch, tf.multiply(self._h_batch, self._t_batch, "element_wise_multiply"),"r_product"), 1)

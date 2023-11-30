@@ -248,10 +248,17 @@ class UKGE_LOGI(object):
             self._soft_h_batch = tf.nn.embedding_lookup(ht, self._soft_h_index)
             self._soft_t_batch = tf.nn.embedding_lookup(ht, self._soft_t_index)
             self._soft_r_batch = tf.nn.embedding_lookup(r, self._soft_r_index)
-
-        # Compute Main Loss
         self.w = tf.Variable(0.0, name="weights")
         self.b = tf.Variable(0.0, name="bias")
+        ....
+```
+
+## Step 6: Compute Main Loss
+
+$$htr = \sum_{i=1}^{n} ( R_i \cdot (H_i \odot T_i ))$$
+
+```python
+        ...
         self._htr = tf.reduce_sum(tf.multiply(self._r_batch, tf.multiply(self._h_batch, self._t_batch, "element_wise_multiply"),"r_product"), 1)
         self._f_prob_h = tf.sigmoid(self.w * self._htr + self.b) # Logistic regression
         self._f_score_h = tf.square(tf.subtract(self._f_prob_h, self._A_w))
@@ -263,7 +270,7 @@ class UKGE_LOGI(object):
         ...
 ```
 
-## Step 6: Compute PSL Loss
+## Step 7: Compute PSL Loss
 
 
 $$\text{psl-prob} = \(\sigma ( w \cdot \sum_{i=1}^{n} ( \text{R}_i \cdot ( \text{H}_i \cdot \text{T}_i ) ) + b )\)$$
@@ -286,7 +293,7 @@ With $\text{p-psl}$ is coefficient
         ...
 ```
 
-## Step 7: Optimization
+## Step 8: Optimization
 ```python
         ...
         self._A_loss = tf.add(self.main_loss, self.psl_loss)
@@ -296,7 +303,7 @@ With $\text{p-psl}$ is coefficient
         self._train_op = self._opt.apply_gradients(self._gradient)
 ```
 
-## Step 8: Model
+## Step 9: Model
 ```python
 model = UKGE_LOGI(num_rels=this_data.num_rels(),
                 num_cons=this_data.num_cons(),
@@ -307,7 +314,7 @@ model = UKGE_LOGI(num_rels=this_data.num_rels(),
 model.build()
 ```
 
-## Step 9: Training
+## Step 10: Training
 
 A session is created and started using `tf.Session()` and `Session.run` takes the operations we created and data to be fed as parameters and it returns the result. Only after running `tf.global_variables_initializer()` in a session will the variables hold the values you told them to hold.
 

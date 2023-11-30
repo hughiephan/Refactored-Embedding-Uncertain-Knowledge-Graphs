@@ -287,7 +287,6 @@ $$loss_{main} = \frac{\sum (\frac{f_{score_{tn}} + f_{score_{hn}}}{2} \times p_{
 
 ## Step 7: Compute PSL Loss
 
-
 $$prob_{psl} = \(\sigma ( w \cdot \sum_{i=1}^{n} ( \text{R}_i \cdot ( \text{H}_i \cdot \text{T}_i ) ) + b )\)$$
 
 $$\text{psl-error-each} = ( \max ( w + \text{prior-psl0} - prob_{psl}, 0 ))^2$$ 
@@ -309,6 +308,9 @@ With $\text{p-psl}$ is coefficient
 ```
 
 ## Step 8: Optimization
+
+$$loss_{A} = loss_{main} + loss_{psl}$$
+
 ```python
         ...
         self._A_loss = tf.add(self.main_loss, self.psl_loss)

@@ -295,7 +295,7 @@ $$mse_{psl} = \frac{1}{N} \sum_{i=1}^{N} \text{psl-error-each}_i$$
 
 $$loss_{psl} = mse_{psl} \cdot \text{p-psl}$$
 
-With $\text{p-psl}$ is coefficient, and `prior_psl0` is just a constant 0
+With $\text{p-psl}$ is coefficient, and `prior_psl0` is just a constant 0, and psl-error-each seems like is derived from the Lukasiewicz t-norm
 
 ```
         ....

@@ -181,7 +181,6 @@ this_data = Data()
 this_data.load_data(file_train='/kaggle/input/cn15k-dataset/train.tsv', 
                 file_val='/kaggle/input/cn15k-dataset/val.tsv', 
                 file_psl='/kaggle/input/cn15k-dataset/softlogic.tsv')
-// this_data.corrupt_batch # We need add this one
 batchloader = BatchLoader(this_data, batch_size, neg_per_positive)
 ```
 
@@ -382,6 +381,8 @@ for epoch in range(1, epochs + 1):
             print('process: %d / %d. Epoch %d' % (batch_id + 1, num_batch, epoch))
     this_total_loss = np.sum(epoch_loss) / len(epoch_loss)
     print("Loss of epoch %d = %s" % (epoch, np.sum(this_total_loss)))
+
+    // TODO: Add Validator and the second corrupt function
 ```
 
 Here's the result:

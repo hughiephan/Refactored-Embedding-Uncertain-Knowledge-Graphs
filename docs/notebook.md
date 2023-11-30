@@ -276,7 +276,13 @@ class UKGE_LOGI(object):
         self._train_op = self._opt.apply_gradients(self._gradient)
 ```
 
-$$\(\sigma ( w \cdot \sum_{i=1}^{n} ( \text{R}_i \cdot ( \text{H}_i \cdot \text{T}_i ) ) + b )\)$$
+Definition of psl_prob: 
+
+$$\text{psl\_prob} = \(\sigma ( w \cdot \sum_{i=1}^{n} ( \text{R}_i \cdot ( \text{H}_i \cdot \text{T}_i ) ) + b )\)$$
+
+$$\text{psl\_error\_each} = ( \max ( w + \text{prior\_psl0} - \text{psl\_prob}, 0 ))^2$$ 
+
+Definition of 
 
 ## Step 6: Model
 ```python

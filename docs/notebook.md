@@ -278,9 +278,9 @@ class UKGE_LOGI(object):
 
 Definition of psl_prob: 
 
-$$\text{psl\_prob} = \(\sigma ( w \cdot \sum_{i=1}^{n} ( \text{R}_i \cdot ( \text{H}_i \cdot \text{T}_i ) ) + b )\)$$
+$$\text{psl-prob} = \(\sigma ( w \cdot \sum_{i=1}^{n} ( \text{R}_i \cdot ( \text{H}_i \cdot \text{T}_i ) ) + b )\)$$
 
-$$\text{psl\_error\_each} = ( \max ( w + \text{prior\_psl0} - \text{psl\_prob}, 0 ))^2$$ 
+$$\text{psl-error-each} = ( \max ( w + \text{prior-psl0} - \text{psl-prob}, 0 ))^2$$ 
 
 Definition of 
 

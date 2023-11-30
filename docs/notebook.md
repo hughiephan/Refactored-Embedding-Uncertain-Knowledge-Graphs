@@ -254,6 +254,8 @@ class UKGE_LOGI(object):
 
 ## Step 6: Compute Main Loss
 
+Combine the H, T, and R together. Then we need to calculate the score of h, hn, and tn based on the probability. Finally, get the loss value based on the scores.
+
 $$htr = \sum_{i=1}^{n} ( R_i \cdot (H_i \odot T_i ))$$
 
 $$f_{prob_h} = \sigma(w * htr + b)$$

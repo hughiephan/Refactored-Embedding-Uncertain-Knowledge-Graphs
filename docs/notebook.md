@@ -276,7 +276,7 @@ class UKGE_LOGI(object):
         self._train_op = self._opt.apply_gradients(self._gradient)
 ```
 
-$\text{tf.sigmoid}\left(\text{self.w} \cdot \text{tf.reduce\_sum}\left(\text{tf.multiply}\left(\text{self.\_soft\_r\_batch}, \text{tf.multiply}\left(\text{self.\_soft\_h\_batch}, \text{self.\_soft\_t\_batch}\right)\right), 1\right) + \text{self.b}\right)$
+$\(\sigma ( w \cdot \sum_{i=1}^{n} ( \text{R}_i \cdot ( \text{H}_i \cdot \text{T}_i ) ) + b )\)$
 
 
 ## Step 6: Model

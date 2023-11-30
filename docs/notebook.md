@@ -286,13 +286,13 @@ $$loss_{main} = \frac{\sum (\frac{f_{score_{tn}} + f_{score_{hn}}}{2} \times p_{
 ## Step 7: Compute PSL Loss
 
 
-$$\text{psl-prob} = \(\sigma ( w \cdot \sum_{i=1}^{n} ( \text{R}_i \cdot ( \text{H}_i \cdot \text{T}_i ) ) + b )\)$$
+$$prob_{psl} = \(\sigma ( w \cdot \sum_{i=1}^{n} ( \text{R}_i \cdot ( \text{H}_i \cdot \text{T}_i ) ) + b )\)$$
 
-$$\text{psl-error-each} = ( \max ( w + \text{prior-psl0} - \text{psl-prob}, 0 ))^2$$ 
+$$\text{psl-error-each} = ( \max ( w + \text{prior-psl0} - prob_{psl}, 0 ))^2$$ 
 
-$$\text{psl-mse} = \frac{1}{N} \sum_{i=1}^{N} \text{psl-error-each}_i$$
+$$mse_{psl} = \frac{1}{N} \sum_{i=1}^{N} \text{psl-error-each}_i$$
 
-$$loss_{psl} = \text{psl-mse} \cdot \text{p-psl}$$
+$$loss_{psl} = \mse_{psl} \cdot \text{p-psl}$$
 
 With $\text{p-psl}$ is coefficient
 

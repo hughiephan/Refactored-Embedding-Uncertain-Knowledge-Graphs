@@ -260,14 +260,31 @@ class UKGE_LOGI(object):
         self._f_prob_tn = tf.sigmoid(self.w * (tf.reduce_sum(tf.multiply(self._neg_rel_tn_batch, tf.multiply(self._neg_h_con_batch, self._neg_tn_con_batch)), 2)) + self.b)
         self._f_score_tn = tf.reduce_mean(tf.square(self._f_prob_tn), 1)
         self.main_loss = (tf.reduce_sum(tf.add(tf.divide(tf.add(self._f_score_tn, self._f_score_hn), 2) * self._p_neg, self._f_score_h))) / self._batch_size
-        
+        ...
+```
+
+## Step 6: Define PSL Loss
+
+
+$$\text{psl-prob} = \(\sigma ( w \cdot \sum_{i=1}^{n} ( \text{R}_i \cdot ( \text{H}_i \cdot \text{T}_i ) ) + b )\)$$
+
+$$\text{psl-error-each} = ( \max ( w + \text{prior-psl0} - \text{psl-prob}, 0 ))^2$$ 
+
+$$\text{reduce\_mean}(\text{psl-error-each}) = \frac{1}{N} \sum_{i=1}^{N} \text{psl-error-each}_i$$
+
+```
+        ....
         # Compute PSL Loss
         self.psl_prob = tf.sigmoid(self.w*tf.reduce_sum(tf.multiply(self._soft_r_batch, tf.multiply(self._soft_h_batch, self._soft_t_batch)), 1)+self.b)
         self.prior_psl0 = tf.constant(self._prior_psl, tf.float32)
         self.psl_error_each = tf.square(tf.maximum(self._soft_w + self.prior_psl0 - self.psl_prob, 0))
         self.psl_mse = tf.reduce_mean(self.psl_error_each)
         self.psl_loss = self.psl_mse * self._p_psl
+        ...
+```
 
+## Step 7: 
+        ...
         # Optimizer
         self._A_loss = tf.add(self.main_loss, self.psl_loss)
         self._lr = tf.placeholder(tf.float32)
@@ -276,15 +293,7 @@ class UKGE_LOGI(object):
         self._train_op = self._opt.apply_gradients(self._gradient)
 ```
 
-Definition of psl_prob: 
-
-$$\text{psl-prob} = \(\sigma ( w \cdot \sum_{i=1}^{n} ( \text{R}_i \cdot ( \text{H}_i \cdot \text{T}_i ) ) + b )\)$$
-
-$$\text{psl-error-each} = ( \max ( w + \text{prior-psl0} - \text{psl-prob}, 0 ))^2$$ 
-
-Definition of 
-
-## Step 6: Model
+## Step 8: Model
 ```python
 model = UKGE_LOGI(num_rels=this_data.num_rels(),
                 num_cons=this_data.num_cons(),
@@ -295,7 +304,7 @@ model = UKGE_LOGI(num_rels=this_data.num_rels(),
 model.build()
 ```
 
-## Step 7: Training
+## Step 9: Training
 
 A session is created and started using `tf.Session()` and `Session.run` takes the operations we created and data to be fed as parameters and it returns the result. Only after running `tf.global_variables_initializer()` in a session will the variables hold the values you told them to hold.
 

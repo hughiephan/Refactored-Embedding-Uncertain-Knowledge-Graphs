@@ -257,6 +257,8 @@ class UKGE_LOGI(object):
 
 $$htr = \sum_{i=1}^{n} ( R_i \cdot (H_i \odot T_i ))$$
 
+$$\text{f-prob-h} = \sigma(w * htr + b)$
+
 ```python
         ...
         self._htr = tf.reduce_sum(tf.multiply(self._r_batch, tf.multiply(self._h_batch, self._t_batch, "element_wise_multiply"),"r_product"), 1)

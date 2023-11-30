@@ -276,8 +276,7 @@ class UKGE_LOGI(object):
         self._train_op = self._opt.apply_gradients(self._gradient)
 ```
 
-$\(\sigma ( \sum_{i=1}^{n} ( \text{R}_i \cdot ( \text{H}_i \cdot \text{T}_i ) ) + b )\)$
-
+$$\(\sigma ( \sum_{i=1}^{n} ( \text{R}_i \cdot ( \text{H}_i \cdot \text{T}_i ) ) + b )\)$$
 
 ## Step 6: Model
 ```python

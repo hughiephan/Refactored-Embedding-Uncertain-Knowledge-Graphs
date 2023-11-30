@@ -263,7 +263,7 @@ class UKGE_LOGI(object):
         ...
 ```
 
-## Step 6: Define PSL Loss
+## Step 6: Compute PSL Loss
 
 
 $$\text{psl-prob} = \(\sigma ( w \cdot \sum_{i=1}^{n} ( \text{R}_i \cdot ( \text{H}_i \cdot \text{T}_i ) ) + b )\)$$
@@ -278,7 +278,6 @@ With $\text{p-psl}$ is coefficient
 
 ```
         ....
-        # Compute PSL Loss
         self.psl_prob = tf.sigmoid(self.w*tf.reduce_sum(tf.multiply(self._soft_r_batch, tf.multiply(self._soft_h_batch, self._soft_t_batch)), 1)+self.b)
         self.prior_psl0 = tf.constant(self._prior_psl, tf.float32)
         self.psl_error_each = tf.square(tf.maximum(self._soft_w + self.prior_psl0 - self.psl_prob, 0))
@@ -287,9 +286,9 @@ With $\text{p-psl}$ is coefficient
         ...
 ```
 
-## Step 7: 
+## Step 7: Optimization
+```python
         ...
-        # Optimizer
         self._A_loss = tf.add(self.main_loss, self.psl_loss)
         self._lr = tf.placeholder(tf.float32)
         self._opt = tf.train.AdamOptimizer(self._lr)

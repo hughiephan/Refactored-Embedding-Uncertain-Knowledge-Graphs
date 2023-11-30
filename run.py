@@ -59,7 +59,7 @@ print('file_psl: %s' % file_psl)
 more_filt = [file_val, join(data_dir, 'test.tsv')]
 print('Read train.tsv from', data_dir)
 this_data = Data()
-this_data.load_data(file_train=file_train, file_val=file_val, file_psl=file_psl)
+this_data.process_data(file_train=file_train, file_val=file_val, file_psl=file_psl)
 for f in more_filt:
     this_data.record_more_data(f)
 this_data.save_meta_table(save_dir)  # output: idx_concept.csv, idx_relation.csv
@@ -68,5 +68,3 @@ this_data.save_meta_table(save_dir)  # output: idx_concept.csv, idx_relation.csv
 trainer = Trainer()
 trainer.build(this_data, save_dir)
 ht_embedding, r_embedding = trainer.train(epochs=param.n_epoch, save_every_epoch=param.val_save_freq, lr=param.learning_rate, data_dir=param.data_dir()) 
-
-# lalala from hughie

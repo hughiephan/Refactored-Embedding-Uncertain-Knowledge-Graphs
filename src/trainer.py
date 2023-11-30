@@ -7,7 +7,7 @@ import tensorflow.compat.v1 as tf
 import time
 from os.path import join
 from src import param
-from src.data import BatchLoader
+from src.batchloader import BatchLoader
 from src.utils import vec_length, ModelList
 from src.model import UKGE_LOGI, UKGE_RECT
 from src.validator import UKGE_LOGI_VALIDATOR, UKGE_RECT_VALIDATOR
@@ -82,46 +82,6 @@ class Trainer(object):
             )
             self.validator = UKGE_RECT_VALIDATOR()
 
-    def gen_batch(self, forever=False, shuffle=True, negsampler=None):
-        """
-        :param ht_embedding: for kNN negative sampling
-        :return:
-        """
-        l = self.this_data.triples.shape[0]
-        while True:
-            triples = self.this_data.triples  # np.float64 [[h,r,t,w]]
-            if shuffle:
-                np.random.shuffle(triples)
-            for i in range(0, l, self.batch_size):
-
-                batch = triples[i: i + self.batch_size, :]
-                if batch.shape[0] < self.batch_size:
-                    batch = np.concatenate((batch, self.this_data.triples[:self.batch_size - batch.shape[0]]), axis=0)
-                    assert batch.shape[0] == self.batch_size
-
-                h_batch, r_batch, t_batch, w_batch = batch[:, 0], batch[:, 1], batch[:, 2], batch[:, 3]
-
-                hrt_batch = batch[:, 0:3].astype(int)
-
-                all_neg_hn_batch = self.this_data.corrupt_batch(hrt_batch, self.neg_per_positive, "h")
-                all_neg_tn_batch = self.this_data.corrupt_batch(hrt_batch, self.neg_per_positive, "t")
-
-                neg_hn_batch, neg_rel_hn_batch, \
-                neg_t_batch, neg_h_batch, \
-                neg_rel_tn_batch, neg_tn_batch \
-                    = all_neg_hn_batch[:, :, 0], \
-                      all_neg_hn_batch[:, :, 1], \
-                      all_neg_hn_batch[:, :, 2], \
-                      all_neg_tn_batch[:, :, 0], \
-                      all_neg_tn_batch[:, :, 1], \
-                      all_neg_tn_batch[:, :, 2]
-                yield h_batch.astype(np.int64), r_batch.astype(np.int64), t_batch.astype(np.int64), w_batch.astype(
-                    np.float32), \
-                      neg_hn_batch.astype(np.int64), neg_rel_hn_batch.astype(np.int64), \
-                      neg_t_batch.astype(np.int64), neg_h_batch.astype(np.int64), \
-                      neg_rel_tn_batch.astype(np.int64), neg_tn_batch.astype(np.int64)
-            if not forever:
-                break
 
     def train(self, epochs=20, save_every_epoch=10, lr=0.001, data_dir=""):
         sess = tf.Session()  # show device info
@@ -134,10 +94,10 @@ class Trainer(object):
         val_losses = []  # [[saver epoch, loss]]
 
         for epoch in range(1, epochs + 1):
-            epoch_loss = self.train1epoch(sess, num_batch, lr, epoch)
-            train_losses.append([epoch, epoch_loss])
+            train_loss = self.train1epoch(sess, num_batch, lr, epoch)
+            train_losses.append([epoch, train_loss])
 
-            if np.isnan(epoch_loss):
+            if np.isnan(train_loss):
                 print("Nan loss. Training collapsed.")
                 return
 
@@ -181,23 +141,19 @@ class Trainer(object):
 
     def save_loss(self, losses, filename, columns):
         df = pd.DataFrame(losses, columns=columns)
-        print(df.tail(5))
         df.to_csv(filename, index=False)
 
     def train1epoch(self, sess, num_batch, lr, epoch):
         batch_time = 0
-        epoch_batches = self.batchloader.gen_batch(forever=True)
-        epoch_loss = []
+        generated_batch = self.batchloader.gen_batch(forever=True)
+        train_loss = []
 
         for batch_id in range(num_batch):
-            batch = next(epoch_batches)
+            batch = next(generated_batch)
             A_h_index, A_r_index, A_t_index, A_w, A_neg_hn_index, A_neg_rel_hn_index, A_neg_t_index, A_neg_h_index, A_neg_rel_tn_index, A_neg_tn_index = batch
             time00 = time.time()
             soft_h_index, soft_r_index, soft_t_index, soft_w_index = self.batchloader.gen_psl_samples()  # length: param.n_psl
             batch_time += time.time() - time00
-
-            # mse_pos: MSE on Positive samples
-            # mse_neg: MSE on Negative samples
             _, gradient, batch_loss, psl_mse, mse_pos, mse_neg, main_loss, psl_prob, psl_mse_each, rule_prior = sess.run(
                 [
                     self.tf_parts._train_op, 
@@ -229,11 +185,10 @@ class Trainer(object):
                     self.tf_parts._lr: lr # Learning Rate
                 })
             param.prior_psl = rule_prior
-            epoch_loss.append(batch_loss)
+            train_loss.append(batch_loss)
             if ((batch_id + 1) % 50 == 0) or batch_id == num_batch - 1:
                 print('process: %d / %d. Epoch %d' % (batch_id + 1, num_batch, epoch))
 
-        this_total_loss = np.sum(epoch_loss) / len(epoch_loss)
+        this_total_loss = np.sum(train_loss) / len(train_loss)
         print("Loss of epoch %d = %s" % (epoch, np.sum(this_total_loss)))
-        # print('MSE on positive instances: %f, MSE on negative samples: %f' % (np.mean(mse_pos), np.mean(mse_neg)))
         return this_total_loss

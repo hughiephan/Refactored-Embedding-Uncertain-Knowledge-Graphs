@@ -152,9 +152,7 @@ class Validator(object):
         # Note: test_triples will be a np.float64 array! (because of the type of w)
         # Take care of the type of hrt when unpacking.
         self.test_triples = np.array(triples)
-
         print("Loaded test data from %s, %d out of %d." % (filename, len(triples), num_lines))
-        # print("Rel each cat:", self.rel_num_cases)
 
     def con_index2vec(self, c):
         return self.vec_c[c]
@@ -379,12 +377,6 @@ class Validator(object):
                 ndcg_sum += ndcg
                 exp_ndcg_sum += exp_ndcg
                 count += 1
-                # if count % 100 == 0:
-                #     print('Processed %d, time %s' % (count, (time.time() - t0)))
-                #     print('mean ndcg (linear gain) now: %f' % (ndcg_sum / count))
-                #     print('mean ndcg (exponential gain) now: %f' % (exp_ndcg_sum / count))
-
-                # debug
                 ranks = self.get_t_ranks(h, r, [tw.index for tw in tw_truth])
                 res.append((h,r,tw_truth, ndcg, ranks))
 

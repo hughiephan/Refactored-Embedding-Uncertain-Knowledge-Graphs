@@ -288,7 +288,7 @@ $$loss_{psl} = mse_{psl} \cdot \text{p-psl}$$
 
 With $\text{p-psl}$ is coefficient, and `prior_psl0` is just a constant 0, and psl-error-each seems like is derived from the Lukasiewicz t-norm
 
-```
+```python
         ....
         self.psl_prob = tf.sigmoid(self.w*tf.reduce_sum(tf.multiply(self.softr_batch, tf.multiply(self.softh_batch, self.softt_batch)), 1)+self.b)
         self.prior_psl0 = tf.constant(self._prior_psl, tf.float32)

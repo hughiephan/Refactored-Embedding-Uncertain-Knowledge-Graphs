@@ -258,7 +258,7 @@ class Validator(object):
         all_neg_hn_batch = self.this_data.corrupt_batch(test_triples, neg_per_positive, "h")
         all_neg_tn_batch = self.this_data.corrupt_batch(test_triples, neg_per_positive, "t")
         neg_hn_batch, neg_rel_hn_batch, \
-        neg_t_batch, neg_h_batch, \
+        negt_batch, negh_batch, \
         neg_rel_tn_batch, neg_tn_batch \
             = all_neg_hn_batch[:, :, 0].astype(int), \
               all_neg_hn_batch[:, :, 1].astype(int), \
@@ -266,8 +266,8 @@ class Validator(object):
               all_neg_tn_batch[:, :, 0].astype(int), \
               all_neg_tn_batch[:, :, 1].astype(int), \
               all_neg_tn_batch[:, :, 2].astype(int)
-        scores_hn = self.get_score_batch(neg_hn_batch, neg_rel_hn_batch, neg_t_batch, isneg2Dbatch=True)
-        scores_tn = self.get_score_batch(neg_h_batch, neg_rel_tn_batch, neg_tn_batch, isneg2Dbatch=True)
+        scores_hn = self.get_score_batch(neg_hn_batch, neg_rel_hn_batch, negt_batch, isneg2Dbatch=True)
+        scores_tn = self.get_score_batch(negh_batch, neg_rel_tn_batch, neg_tn_batch, isneg2Dbatch=True)
         mse_hn = np.sum(np.mean(np.square(scores_hn - 0), axis=1)) / N
         mse_tn = np.sum(np.mean(np.square(scores_tn - 0), axis=1)) / N
 
@@ -283,7 +283,7 @@ class Validator(object):
         all_neg_hn_batch = self.this_data.corrupt_batch(test_triples, neg_per_positive, "h")
         all_neg_tn_batch = self.this_data.corrupt_batch(test_triples, neg_per_positive, "t")
         neg_hn_batch, neg_rel_hn_batch, \
-        neg_t_batch, neg_h_batch, \
+        negt_batch, negh_batch, \
         neg_rel_tn_batch, neg_tn_batch \
             = all_neg_hn_batch[:, :, 0].astype(int), \
               all_neg_hn_batch[:, :, 1].astype(int), \
@@ -291,8 +291,8 @@ class Validator(object):
               all_neg_tn_batch[:, :, 0].astype(int), \
               all_neg_tn_batch[:, :, 1].astype(int), \
               all_neg_tn_batch[:, :, 2].astype(int)
-        scores_hn = self.get_score_batch(neg_hn_batch, neg_rel_hn_batch, neg_t_batch, isneg2Dbatch=True)
-        scores_tn = self.get_score_batch(neg_h_batch, neg_rel_tn_batch, neg_tn_batch, isneg2Dbatch=True)
+        scores_hn = self.get_score_batch(neg_hn_batch, neg_rel_hn_batch, negt_batch, isneg2Dbatch=True)
+        scores_tn = self.get_score_batch(negh_batch, neg_rel_tn_batch, neg_tn_batch, isneg2Dbatch=True)
         mae_hn = np.sum(np.mean(np.absolute(scores_hn - 0), axis=1)) / N
         mae_tn = np.sum(np.mean(np.absolute(scores_tn - 0), axis=1)) / N
 
@@ -620,7 +620,7 @@ class UKGE_RECT_VALIDATOR(Validator):
         all_neg_hn_batch = self.this_data.corrupt_batch(test_triples, neg_per_positive, "h")
         all_neg_tn_batch = self.this_data.corrupt_batch(test_triples, neg_per_positive, "t")
         neg_hn_batch, neg_rel_hn_batch, \
-        neg_t_batch, neg_h_batch, \
+        negt_batch, negh_batch, \
         neg_rel_tn_batch, neg_tn_batch \
             = all_neg_hn_batch[:, :, 0].astype(int), \
               all_neg_hn_batch[:, :, 1].astype(int), \
@@ -628,8 +628,8 @@ class UKGE_RECT_VALIDATOR(Validator):
               all_neg_tn_batch[:, :, 0].astype(int), \
               all_neg_tn_batch[:, :, 1].astype(int), \
               all_neg_tn_batch[:, :, 2].astype(int)
-        scores_hn = self.get_score_batch(neg_hn_batch, neg_rel_hn_batch, neg_t_batch, isneg2Dbatch=True)
-        scores_tn = self.get_score_batch(neg_h_batch, neg_rel_tn_batch, neg_tn_batch, isneg2Dbatch=True)
+        scores_hn = self.get_score_batch(neg_hn_batch, neg_rel_hn_batch, negt_batch, isneg2Dbatch=True)
+        scores_tn = self.get_score_batch(negh_batch, neg_rel_tn_batch, neg_tn_batch, isneg2Dbatch=True)
 
         scores_hn = self.bound_score(scores_hn)
         scores_tn = self.bound_score(scores_tn)

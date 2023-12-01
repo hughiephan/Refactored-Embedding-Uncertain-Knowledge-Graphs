@@ -41,13 +41,13 @@ class BatchLoader():
 
                 h_batch, r_batch, t_batch, w_batch = batch[:, 0].astype(int), batch[:, 1].astype(int), batch[:, 2].astype(int), batch[:, 3]
                 hrt_batch = batch[:, 0:3].astype(int)
-                neg_hn_batch, neg_rel_hn_batch, neg_t_batch, neg_h_batch, neg_rel_tn_batch, neg_tn_batch = self.corrupt_batch(h_batch, r_batch, t_batch)
+                neg_hn_batch, neg_rel_hn_batch, negt_batch, negh_batch, neg_rel_tn_batch, neg_tn_batch = self.corrupt_batch(h_batch, r_batch, t_batch)
                 
                 yield h_batch.astype(np.int64), r_batch.astype(np.int64), t_batch.astype(
                     np.int64), w_batch.astype(
                     np.float32), \
                       neg_hn_batch.astype(np.int64), neg_rel_hn_batch.astype(np.int64), \
-                      neg_t_batch.astype(np.int64), neg_h_batch.astype(np.int64), \
+                      negt_batch.astype(np.int64), negh_batch.astype(np.int64), \
                       neg_rel_tn_batch.astype(np.int64), neg_tn_batch.astype(np.int64)
             if not forever:
                 break
@@ -58,10 +58,10 @@ class BatchLoader():
         neg_hn_batch = np.random.randint(0, N, size=(
         self.batch_size, self.neg_per_positive))  # random index without filtering
         neg_rel_hn_batch = np.tile(r_batch, (self.neg_per_positive, 1)).transpose()  # copy
-        neg_t_batch = np.tile(t_batch, (self.neg_per_positive, 1)).transpose()
+        negt_batch = np.tile(t_batch, (self.neg_per_positive, 1)).transpose()
 
-        neg_h_batch = np.tile(h_batch, (self.neg_per_positive, 1)).transpose()
+        negh_batch = np.tile(h_batch, (self.neg_per_positive, 1)).transpose()
         neg_rel_tn_batch = neg_rel_hn_batch
         neg_tn_batch = np.random.randint(0, N, size=(self.batch_size, self.neg_per_positive))
 
-        return neg_hn_batch, neg_rel_hn_batch, neg_t_batch, neg_h_batch, neg_rel_tn_batch, neg_tn_batch
+        return neg_hn_batch, neg_rel_hn_batch, negt_batch, negh_batch, neg_rel_tn_batch, neg_tn_batch

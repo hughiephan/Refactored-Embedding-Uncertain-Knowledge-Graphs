@@ -67,7 +67,7 @@ class Data(object):
             self.triples_record.add((h, r, t))
         return np.array(triples)
 
-    def process_data(self, file_train, file_val, file_psl=None, splitter='\t', line_end='\n'):
+    def load_data(self, file_train, file_val, file_psl=None, splitter='\t', line_end='\n'):
 
         self.triples = self.load_triples(file_train, splitter, line_end)
         self.val_triples = self.load_triples(file_val, splitter, line_end)
@@ -171,15 +171,6 @@ class Data(object):
             position = 0
         res = [self.corrupt_pos(triple, position) for i in range(neg_per_positive)]
         return np.array(res)
-
-    class index_dist:
-        def __init__(self, index, dist):
-            self.dist = dist
-            self.index = index
-            return
-
-        def __lt__(self, other):
-            return self.dist > other.dist
 
     # bernoulli negative sampling on a batch
     def corrupt_batch(self, t_batch, neg_per_positive, tar=None):

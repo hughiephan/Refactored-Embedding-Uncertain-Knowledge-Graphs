@@ -151,11 +151,11 @@ class Trainer(object):
             time00 = time.time()
             soft_h_index, soft_r_index, soft_t_index, soft_w_index = self.batchloader.gen_psl_samples()  # length: param.n_psl
             batch_time += time.time() - time00
-            _, gradient, batch_loss, psl_mse, mse_pos, mse_neg, main_loss, psl_prob, psl_mse_each, rule_prior = sess.run(
+            _, gradient, A_loss, psl_mse, mse_pos, mse_neg, main_loss, psl_prob, psl_mse_each, rule_prior = sess.run(
                 [
                     self.model.train_op, 
                     self.model.gradient,
-                    self.model.A_loss, # A_loss: Main Loss + PSL Loss
+                    self.model.A_loss,
                     self.model.psl_mse, 
                     self.model.f_score_h, 
                     self.model.f_score_hn,
@@ -182,7 +182,7 @@ class Trainer(object):
                     self.model.lr: lr # Learning Rate
                 })
             param.prior_psl = rule_prior
-            train_loss.append(batch_loss)
+            train_loss.append(A_loss)
             if ((batch_id + 1) % 50 == 0) or batch_id == num_batch - 1:
                 print('process: %d / %d. Epoch %d' % (batch_id + 1, num_batch, epoch))
 

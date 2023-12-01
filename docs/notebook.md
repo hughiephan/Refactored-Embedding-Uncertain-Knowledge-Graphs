@@ -138,10 +138,6 @@ class BatchLoader():
         return soft_sample_batch
 
     def gen_batch(self, forever=False, shuffle=True):
-        """
-        :param ht_embedding: for kNN negative sampling
-        :return:
-        """
         l = self.this_data.triples.shape[0]
         while True:
             triples = self.this_data.triples  # np.float64 [[h,r,t,w]]
@@ -344,11 +340,11 @@ for epoch in range(1, epochs + 1):
         batch = next(epoch_batches)
         A_h_index, A_r_index, A_t_index, A_w, A_neg_hn_index, A_neg_rel_hn_index, A_neg_t_index, A_neg_h_index, A_neg_rel_tn_index, A_neg_tn_index = batch
         soft_h_index, soft_r_index, soft_t_index, soft_w_index = batchloader.gen_psl_samples()  # length: param.n_psl
-        _, gradient, batch_loss, psl_mse, mse_pos, mse_neg, main_loss, psl_prob, psl_mse_each, rule_prior = sess.run(
+        _, gradient, A_loss, psl_mse, mse_pos, mse_neg, main_loss, psl_prob, psl_mse_each, rule_prior = sess.run(
             [
                 model.train_op, 
                 model.gradient,
-                model.A_loss, # A_loss: Main Loss + PSL Loss
+                model.A_loss,
                 model.psl_mse, 
                 model.f_score_h, 
                 model.f_score_hn,
@@ -375,7 +371,7 @@ for epoch in range(1, epochs + 1):
                 model.lr: lr # Learning Rate
             })
         prior_psl = rule_prior
-        epoch_loss.append(batch_loss)
+        epoch_loss.append(A_loss)
         if ((batch_id + 1) % 50 == 0) or batch_id == num_batch - 1:
             print('process: %d / %d. Epoch %d' % (batch_id + 1, num_batch, epoch))
     this_total_loss = np.sum(epoch_loss) / len(epoch_loss)

@@ -43,20 +43,14 @@ class BatchLoader():
                 hrt_batch = batch[:, 0:3].astype(int)
                 neg_hn_batch, neg_rel_hn_batch, negt_batch, negh_batch, neg_rel_tn_batch, neg_tn_batch = self.corrupt_batch(h_batch, r_batch, t_batch)
                 
-                yield h_batch.astype(np.int64), r_batch.astype(np.int64), t_batch.astype(
-                    np.int64), w_batch.astype(
-                    np.float32), \
-                      neg_hn_batch.astype(np.int64), neg_rel_hn_batch.astype(np.int64), \
-                      negt_batch.astype(np.int64), negh_batch.astype(np.int64), \
-                      neg_rel_tn_batch.astype(np.int64), neg_tn_batch.astype(np.int64)
+                yield h_batch.astype(np.int64), r_batch.astype(np.int64), t_batch.astype(np.int64), w_batch.astype(np.float32), neg_hn_batch.astype(np.int64), neg_rel_hn_batch.astype(np.int64), negt_batch.astype(np.int64), negh_batch.astype(np.int64), neg_rel_tn_batch.astype(np.int64), neg_tn_batch.astype(np.int64)
             if not forever:
                 break
 
     def corrupt_batch(self, h_batch, r_batch, t_batch):
         N = self.this_data.num_cons()  # number of entities
 
-        neg_hn_batch = np.random.randint(0, N, size=(
-        self.batch_size, self.neg_per_positive))  # random index without filtering
+        neg_hn_batch = np.random.randint(0, N, size=(self.batch_size, self.neg_per_positive))  # random index without filtering
         neg_rel_hn_batch = np.tile(r_batch, (self.neg_per_positive, 1)).transpose()  # copy
         negt_batch = np.tile(t_batch, (self.neg_per_positive, 1)).transpose()
 

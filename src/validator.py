@@ -50,18 +50,6 @@ class Validator(object):
         self.test_triples = np.array([0])
         self.test_triples_group = {}
 
-    # completed by child class
-    def build_by_file(self, test_data_file, model_dir, model_filename='xcn-distmult.ckpt', data_filename='xc-data.bin'):
-        # load the saved Data()
-        self.this_data = data.Data()
-        data_save_path = join(model_dir, data_filename)
-        self.this_data.load(data_save_path)
-
-        # load testing data
-        self.load_test_data(test_data_file)
-
-        self.model_dir = model_dir  # used for saving
-
     # abstract method
     def build_by_var(self, test_data, tf_model, this_data, sess):
         raise NotImplementedError("Fatal Error: This model' validator didn't implement its build_by_var() function!")
@@ -160,42 +148,11 @@ class Validator(object):
     def rel_index2vec(self, r):
         return self.vec_r[r]
 
-    class index_dist:
-        def __init__(self, index, dist):
-            self.dist = dist
-            self.index = index
-            return
-
-        def __lt__(self, other):
-            return self.dist > other.dist
-
     def con_index2str(self, str):
         return self.this_data.con_index2str(str)
 
     def rel_index2str(self, str):
         return self.this_data.rel_index2str(str)
-
-    # input must contain a pool of pre- or post-projected vecs. return a list of indices and dist
-    def kNN(self, vec, vec_pool, topk=10, self_id=None):
-        q = []
-        for i in range(len(vec_pool)):
-            # skip self
-            if i == self_id:
-                continue
-            dist = np.dot(vec, vec_pool[i])
-            if len(q) < topk:
-                HP.heappush(q, self.index_dist(i, dist))
-            else:
-                # indeed it fetches the biggest
-                # as the index_dist "lt" is defined as larger dist
-                tmp = HP.nsmallest(1, q)[0]
-                if tmp.dist < dist:
-                    HP.heapreplace(q, self.index_dist(i, dist))
-        rst = []
-        while len(q) > 0:
-            item = HP.heappop(q)
-            rst.insert(0, (item.index, item.dist))
-        return rst
 
     def vecs_from_triples(self, h, r, t):
         """
@@ -232,22 +189,6 @@ class Validator(object):
 
         return mse
 
-    def get_mae(self, verbose=False, save_dir='', epoch=0):
-        test_triples = self.test_triples
-        N = test_triples.shape[0]
-
-        # existing triples
-        # (score - w)^2
-        h_batch = test_triples[:, 0].astype(int)
-        r_batch = test_triples[:, 1].astype(int)
-        t_batch = test_triples[:, 2].astype(int)
-        w_batch = test_triples[:, 3]
-        scores = self.get_score_batch(h_batch, r_batch, t_batch)
-        mae = np.sum(np.absolute(scores - w_batch))
-
-        mae = mae / N
-
-        return mae
 
     def get_mse_neg(self, neg_per_positive):
         test_triples = self.test_triples
@@ -274,30 +215,6 @@ class Validator(object):
         mse = (mse_hn + mse_tn) / 2
         return mse
 
-    def get_mae_neg(self, neg_per_positive):
-        test_triples = self.test_triples
-        N = test_triples.shape[0]
-
-        # negative samples
-        # (score - 0)^2
-        all_neg_hn_batch = self.this_data.corrupt_batch(test_triples, neg_per_positive, "h")
-        all_neg_tn_batch = self.this_data.corrupt_batch(test_triples, neg_per_positive, "t")
-        neg_hn_batch, neg_rel_hn_batch, \
-        negt_batch, negh_batch, \
-        neg_rel_tn_batch, neg_tn_batch \
-            = all_neg_hn_batch[:, :, 0].astype(int), \
-              all_neg_hn_batch[:, :, 1].astype(int), \
-              all_neg_hn_batch[:, :, 2].astype(int), \
-              all_neg_tn_batch[:, :, 0].astype(int), \
-              all_neg_tn_batch[:, :, 1].astype(int), \
-              all_neg_tn_batch[:, :, 2].astype(int)
-        scores_hn = self.get_score_batch(neg_hn_batch, neg_rel_hn_batch, negt_batch, isneg2Dbatch=True)
-        scores_tn = self.get_score_batch(negh_batch, neg_rel_tn_batch, neg_tn_batch, isneg2Dbatch=True)
-        mae_hn = np.sum(np.mean(np.absolute(scores_hn - 0), axis=1)) / N
-        mae_tn = np.sum(np.mean(np.absolute(scores_tn - 0), axis=1)) / N
-
-        mae_neg = (mae_hn + mae_tn) / 2
-        return mae_neg
 
     def con_index2vec_batch(self, indices):
         return np.squeeze(self.vec_c[[indices], :])
@@ -428,34 +345,6 @@ class UKGE_LOGI_VALIDATOR(Validator):
         Validator.__init__(self)
 
     # override
-    def build_by_file(self, test_data_file, model_dir, model_filename='model.bin', data_filename='data.bin'):
-        """
-        load data and model from files
-        get self.vec_c (vectors for concepts), and self.vec_r(vectors for relations)
-        :return:
-        """
-        Validator.build_by_file(self, test_data_file, model_dir, model_filename,
-                             data_filename)
-
-        # load tf model and embeddings
-        model_save_path = join(model_dir, model_filename)
-        self.model = UKGE_LOGI(num_rels=self.this_data.num_rels(),
-                                     num_cons=self.this_data.num_cons(),
-                                     dim=self.this_data.dim,
-                                     batch_size=self.this_data.batch_size, neg_per_positive=10, p_neg=1)
-        # neg_per_positive, reg_scale and p_neg are not used in testing
-        sess = tf.Session()
-        self.model.saver.restore(sess, model_save_path)  # load it
-        value_ht, value_r, w, b = sess.run(
-            [self.model._ht, self.model._r, self.model.w, self.model.b])  # extract values.
-        sess.close()
-        self.vec_c = np.array(value_ht)
-        self.vec_r = np.array(value_r)
-        self.w = w
-        self.b = b
-        # when a model doesn't have Mt, suppose it should pass Mh
-
-    # override
     def build_by_var(self, test_data, tf_model, this_data, sess=tf.Session()):
         """
         use data and model in memory.
@@ -467,8 +356,7 @@ class UKGE_LOGI_VALIDATOR(Validator):
         self.test_triples = test_data
         self.model = tf_model
 
-        value_ht, value_r, w, b = sess.run(
-            [self.model._ht, self.model._r, self.model.w, self.model.b])  # extract values.
+        value_ht, value_r, w, b = sess.run([self.model._ht, self.model._r, self.model.w, self.model.b])  # extract values.
         self.vec_c = np.array(value_ht)
         self.vec_r = np.array(value_r)
         self.w = w
@@ -494,39 +382,6 @@ class UKGE_LOGI_VALIDATOR(Validator):
 class UKGE_RECT_VALIDATOR(Validator):
     def __init__(self, ):
         Validator.__init__(self)
-
-    # override
-    def build_by_file(self, test_data_file, model_dir, model_filename='model.bin',
-                      data_filename='data.bin'):
-        """
-        load data and model from files
-        get self.vec_c (vectors for concepts), and self.vec_r(vectors for relations)
-        :return:
-        """
-
-        # grandparent class: Validator
-        Validator.build_by_file(self, test_data_file, model_dir, model_filename, data_filename)
-
-        # load tf model and embeddings
-        model_save_path = join(model_dir, model_filename)
-
-        # reg_scale and neg_per_pos won't be used in the tf model during testing
-        # just give any to build
-        self.model = UKGE_RECT(num_rels=self.this_data.num_rels(),
-                                     num_cons=self.this_data.num_cons(),
-                                     dim=self.this_data.dim,
-                                     batch_size=self.this_data.batch_size, neg_per_positive=10, reg_scale=0.1,
-                                     p_neg=1)
-        # neg_per_positive, reg_scale and p_neg are not used in testing
-        sess = tf.Session()
-        self.model.saver.restore(sess, model_save_path)  # load it
-        value_ht, value_r, w, b = sess.run(
-            [self.model._ht, self.model._r, self.model.w, self.model.b])  # extract values.
-        sess.close()
-        self.vec_c = np.array(value_ht)
-        self.vec_r = np.array(value_r)
-        self.w = w
-        self.b = b
 
     # override
     def build_by_var(self, test_data, tf_model, this_data, sess=tf.Session()):
@@ -593,22 +448,6 @@ class UKGE_RECT_VALIDATOR(Validator):
 
         return mse
 
-    def get_mae(self, verbose=False, save_dir='', epoch=0):
-        test_triples = self.test_triples
-        N = test_triples.shape[0]
-
-        # existing triples
-        # (score - w)^2
-        h_batch = test_triples[:, 0].astype(int)
-        r_batch = test_triples[:, 1].astype(int)
-        t_batch = test_triples[:, 2].astype(int)
-        w_batch = test_triples[:, 3]
-        scores = self.get_score_batch(h_batch, r_batch, t_batch)
-        scores = self.bound_score(scores)
-        mae = np.sum(np.absolute(scores - w_batch))
-
-        mae = mae / N
-        return mae
 
     def get_mse_neg(self, neg_per_positive):
         test_triples = self.test_triples

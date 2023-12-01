@@ -24,9 +24,7 @@ class Trainer(object):
         self.file_val = ""
         self.L1 = False
 
-    def build(self, data_obj, save_dir,
-              model_save='model.bin',
-              data_save='data.bin'):
+    def build(self, data_obj, save_dir, model_save='model.bin', data_save='data.bin'):
         """
         All files are stored in save_dir.
         output files:
@@ -35,7 +33,6 @@ class Trainer(object):
         3. training_loss.csv, val_loss.csv
         :param model_save: filename for model
         :param data_save: filename for self.this_data
-        :param knn_neg: use kNN negative sampling
         :return:
         """
         self.verbose = param.verbose  # print extra information

@@ -137,7 +137,7 @@ class BatchLoader():
         soft_sample_batch = (soft_h, soft_r, soft_t, soft_lb)
         return soft_sample_batch
 
-    def gen_batch(self, forever=False, shuffle=True, negsampler=None):
+    def gen_batch(self, forever=False, shuffle=True):
         """
         :param ht_embedding: for kNN negative sampling
         :return:
@@ -154,12 +154,7 @@ class BatchLoader():
                     assert batch.shape[0] == self.batch_size
                 h_batch, r_batch, t_batch, w_batch = batch[:, 0].astype(int), batch[:, 1].astype(int), batch[:, 2].astype(int), batch[:, 3]
                 hrt_batch = batch[:, 0:3].astype(int)
-                if negsampler is None:
-                    neg_hn_batch, neg_rel_hn_batch, neg_t_batch, neg_h_batch, neg_rel_tn_batch, neg_tn_batch = self.corrupt_batch(h_batch, r_batch, t_batch)
-                else:
-                    # neg_per_positive controlled by sampler
-                    all_neg_hn_batch = negsampler.knn_negative_batch(hrt_batch, "h")
-                    all_neg_tn_batch = negsampler.knn_negative_batch(hrt_batch, "t")
+                neg_hn_batch, neg_rel_hn_batch, neg_t_batch, neg_h_batch, neg_rel_tn_batch, neg_tn_batch = self.corrupt_batch(h_batch, r_batch, t_batch)
                 yield h_batch.astype(np.int64), r_batch.astype(np.int64), t_batch.astype(np.int64), w_batch.astype(np.float32), neg_hn_batch.astype(np.int64), neg_rel_hn_batch.astype(np.int64), neg_t_batch.astype(np.int64), neg_h_batch.astype(np.int64), neg_rel_tn_batch.astype(np.int64), neg_tn_batch.astype(np.int64)
             if not forever:
                 break

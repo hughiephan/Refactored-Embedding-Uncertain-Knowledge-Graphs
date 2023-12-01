@@ -67,12 +67,12 @@ class UKGE(object):
         self.define_psl_loss()  # Abstract method to be overriden
 
         # Optimizer
-        self._A_loss = tf.add(self.main_loss, self.psl_loss)
-        self._lr = lr = tf.placeholder(tf.float32)
-        self._opt = opt = tf.train.AdamOptimizer(lr)
-        self._gradient = gradient = opt.compute_gradients(self._A_loss) 
-        self._train_op = opt.apply_gradients(gradient)
-        self._saver = tf.train.Saver(max_to_keep=2)
+        self.A_loss = tf.add(self.main_loss, self.psl_loss)
+        self.lr = lr = tf.placeholder(tf.float32)
+        self.opt = opt = tf.train.AdamOptimizer(lr)
+        self.gradient = gradient = opt.compute_gradients(self.A_loss) 
+        self.train_op = opt.apply_gradients(gradient)
+        self.saver = tf.train.Saver(max_to_keep=2)
 
     def compute_psl_loss(self): # Will be trained in Trainer through TF Parts
         self.prior_psl0 = tf.constant(self._prior_psl, tf.float32)
@@ -112,16 +112,16 @@ class UKGE_LOGI(UKGE):
         self.w = tf.Variable(0.0, name="weights")
         self.b = tf.Variable(0.0, name="bias")
 
-        self._htr = htr = tf.reduce_sum(tf.multiply(self.r_batch, tf.multiply(self.h_batch, self.t_batch, "element_wise_multiply"),"r_product"), 1)
+        self.htr = htr = tf.reduce_sum(tf.multiply(self.r_batch, tf.multiply(self.h_batch, self.t_batch, "element_wise_multiply"),"r_product"), 1)
 
-        self._f_prob_h = f_prob_h = tf.sigmoid(self.w * htr + self.b) # Logistic regression
-        self._f_score_h = f_score_h = tf.square(tf.subtract(f_prob_h, self.A_w))
+        self.f_prob_h = f_prob_h = tf.sigmoid(self.w * htr + self.b) # Logistic regression
+        self.f_score_h = f_score_h = tf.square(tf.subtract(f_prob_h, self.A_w))
 
-        self._f_prob_hn = f_prob_hn = tf.sigmoid(self.w * (tf.reduce_sum( tf.multiply(self.neg_rel_hn_batch, tf.multiply(self.neg_hn_con_batch, self.neg_t_con_batch)), 2)) + self.b)
-        self._f_score_hn = f_score_hn = tf.reduce_mean(tf.square(f_prob_hn), 1)
+        self.f_prob_hn = f_prob_hn = tf.sigmoid(self.w * (tf.reduce_sum( tf.multiply(self.neg_rel_hn_batch, tf.multiply(self.neg_hn_con_batch, self.neg_t_con_batch)), 2)) + self.b)
+        self.f_score_hn = f_score_hn = tf.reduce_mean(tf.square(f_prob_hn), 1)
 
-        self._f_prob_tn = f_prob_tn = tf.sigmoid(self.w * (tf.reduce_sum(tf.multiply(self.neg_rel_tn_batch, tf.multiply(self.neg_h_con_batch, self.neg_tn_con_batch)), 2)) + self.b)
-        self._f_score_tn = f_score_tn = tf.reduce_mean(tf.square(f_prob_tn), 1)
+        self.f_prob_tn = f_prob_tn = tf.sigmoid(self.w * (tf.reduce_sum(tf.multiply(self.neg_rel_tn_batch, tf.multiply(self.neg_h_con_batch, self.neg_tn_con_batch)), 2)) + self.b)
+        self.f_score_tn = f_score_tn = tf.reduce_mean(tf.square(f_prob_tn), 1)
 
         self.main_loss = (tf.reduce_sum(tf.add(tf.divide(tf.add(f_score_tn, f_score_hn), 2) * self._p_neg, f_score_h))) / self._batch_size
 
@@ -142,19 +142,19 @@ class UKGE_RECT(UKGE):
         self.w = tf.Variable(0.0, name="weights")
         self.b = tf.Variable(0.0, name="bias")
 
-        self._htr = htr = tf.reduce_sum(tf.multiply(self.r_batch, tf.multiply(self.h_batch, self.t_batch, "element_wise_multiply"),"r_product"), 1)
+        self.htr = htr = tf.reduce_sum(tf.multiply(self.r_batch, tf.multiply(self.h_batch, self.t_batch, "element_wise_multiply"),"r_product"), 1)
 
-        self._f_prob_h = f_prob_h = self.w * htr + self.b
-        self._f_score_h = f_score_h = tf.square(tf.subtract(f_prob_h, self.A_w))
+        self.f_prob_h = f_prob_h = self.w * htr + self.b
+        self.f_score_h = f_score_h = tf.square(tf.subtract(f_prob_h, self.A_w))
 
-        self._f_prob_hn = f_prob_hn = self.w * (tf.reduce_sum(tf.multiply(self.neg_rel_hn_batch, tf.multiply(self.neg_hn_con_batch, self.neg_t_con_batch)), 2)) + self.b
-        self._f_score_hn = f_score_hn = tf.reduce_mean(tf.square(f_prob_hn), 1)
+        self.f_prob_hn = f_prob_hn = self.w * (tf.reduce_sum(tf.multiply(self.neg_rel_hn_batch, tf.multiply(self.neg_hn_con_batch, self.neg_t_con_batch)), 2)) + self.b
+        self.f_score_hn = f_score_hn = tf.reduce_mean(tf.square(f_prob_hn), 1)
 
-        self._f_prob_tn = f_prob_tn = self.w * (tf.reduce_sum(tf.multiply(self.neg_rel_tn_batch, tf.multiply(self.neg_h_con_batch, self.neg_tn_con_batch)), 2)) + self.b
-        self._f_score_tn = f_score_tn = tf.reduce_mean(tf.square(f_prob_tn), 1)
+        self.f_prob_tn = f_prob_tn = self.w * (tf.reduce_sum(tf.multiply(self.neg_rel_tn_batch, tf.multiply(self.neg_h_con_batch, self.neg_tn_con_batch)), 2)) + self.b
+        self.f_score_tn = f_score_tn = tf.reduce_mean(tf.square(f_prob_tn), 1)
 
         self.this_loss = this_loss = (tf.reduce_sum(tf.add(tf.divide(tf.add(f_score_tn, f_score_hn), 2) * self._p_neg, f_score_h))) / self._batch_size
-        self._regularizer = regularizer = tf.add(tf.add(tf.divide(tf.nn.l2_loss(self.h_batch), self.batch_size), tf.divide(tf.nn.l2_loss(self.t_batch), self.batch_size)), tf.divide(tf.nn.l2_loss(self.r_batch), self.batch_size)) # L2 regularizer
+        self.regularizer = regularizer = tf.add(tf.add(tf.divide(tf.nn.l2_loss(self.h_batch), self.batch_size), tf.divide(tf.nn.l2_loss(self.t_batch), self.batch_size)), tf.divide(tf.nn.l2_loss(self.r_batch), self.batch_size)) # L2 regularizer
         self.main_loss = tf.add(this_loss, self.reg_scale * regularizer)
 
     # Override abstract method

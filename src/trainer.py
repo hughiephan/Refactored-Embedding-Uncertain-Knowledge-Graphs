@@ -18,7 +18,7 @@ class Trainer(object):
         self.batch_size = 128
         self.dim = 64
         self.this_data = None
-        self.tf_parts = None
+        self.model = None
         self.save_path = 'this-distmult.ckpt'
         self.data_save_path = 'this-data.bin'
         self.file_val = ""
@@ -58,7 +58,7 @@ class Trainer(object):
 
         self.model = param.model
         if self.model == ModelList.LOGI:
-            self.tf_parts = UKGE_LOGI(
+            self.model = UKGE_LOGI(
                 num_rels=self.this_data.num_rels(),
                 num_cons=self.this_data.num_cons(),
                 dim=self.dim,
@@ -68,7 +68,7 @@ class Trainer(object):
             )
             self.validator = UKGE_LOGI_VALIDATOR()
         elif self.model == ModelList.RECT:
-            self.tf_parts = UKGE_RECT(
+            self.model = UKGE_RECT(
                 num_rels=self.this_data.num_rels(),
                 num_cons=self.this_data.num_cons(),
                 dim=self.dim,
@@ -100,7 +100,7 @@ class Trainer(object):
 
             if epoch % save_every_epoch == 0:
                 # save model
-                this_save_path = self.tf_parts._saver.save(sess, self.save_path, global_step=epoch)  # save model
+                this_save_path = self.model.saver.save(sess, self.save_path, global_step=epoch)  # save model
                 self.this_data.save(self.data_save_path)  # save data
                 print('VALIDATE AND SAVE MODELS:')
                 print("Model saved in file: %s. Data saved in file: %s" % (this_save_path, self.data_save_path))
@@ -113,16 +113,16 @@ class Trainer(object):
                 self.save_loss(train_losses, self.train_loss_path, columns=['epoch', 'training_loss'])
                 self.save_loss(val_losses, self.val_loss_path, columns=['val_epoch', 'mse', 'mse_neg', 'ndcg(linear)', 'ndcg(exp)'])
 
-        this_save_path = self.tf_parts._saver.save(sess, self.save_path)
+        this_save_path = self.model.saver.save(sess, self.save_path)
         with sess.as_default():
-            ht_embeddings = self.tf_parts._ht.eval()
-            r_embeddings = self.tf_parts._r.eval()
+            ht_embeddings = self.model._ht.eval()
+            r_embeddings = self.model._r.eval()
         print("Model saved in file: %s" % this_save_path)
         sess.close()
         return ht_embeddings, r_embeddings
 
     def get_val_loss(self, epoch, sess): # validation error
-        self.validator.build_by_var(self.this_data.val_triples, self.tf_parts, self.this_data, sess=sess)
+        self.validator.build_by_var(self.this_data.val_triples, self.model, self.this_data, sess=sess)
 
         if not hasattr(self.validator, 'hr_map'):
             self.validator.load_hr_map(param.data_dir(), 'test.tsv', ['train.tsv', 'val.tsv', 'test.tsv'])
@@ -153,33 +153,33 @@ class Trainer(object):
             batch_time += time.time() - time00
             _, gradient, batch_loss, psl_mse, mse_pos, mse_neg, main_loss, psl_prob, psl_mse_each, rule_prior = sess.run(
                 [
-                    self.tf_parts._train_op, 
-                    self.tf_parts._gradient,
-                    self.tf_parts._A_loss, # A_loss: Main Loss + PSL Loss
-                    self.tf_parts.psl_mse, 
-                    self.tf_parts._f_score_h, 
-                    self.tf_parts._f_score_hn,
-                    self.tf_parts.main_loss, 
-                    self.tf_parts.psl_prob, 
-                    self.tf_parts.psl_error_each,
-                    self.tf_parts.prior_psl0
+                    self.model.train_op, 
+                    self.model.gradient,
+                    self.model.A_loss, # A_loss: Main Loss + PSL Loss
+                    self.model.psl_mse, 
+                    self.model.f_score_h, 
+                    self.model.f_score_hn,
+                    self.model.main_loss, 
+                    self.model.psl_prob, 
+                    self.model.psl_error_each,
+                    self.model.prior_psl0
                 ],
                 feed_dict={
-                    self.tf_parts.A_h_index: A_h_index,
-                    self.tf_parts.A_r_index: A_r_index,
-                    self.tf_parts.A_t_index: A_t_index,
-                    self.tf_parts.A_w: A_w,
-                    self.tf_parts.A_neg_hn_index: A_neg_hn_index,
-                    self.tf_parts.A_neg_rel_hn_index: A_neg_rel_hn_index,
-                    self.tf_parts.A_neg_t_index: A_neg_t_index,
-                    self.tf_parts.A_neg_h_index: A_neg_h_index,
-                    self.tf_parts.A_neg_rel_tn_index: A_neg_rel_tn_index,
-                    self.tf_parts.A_neg_tn_index: A_neg_tn_index,
-                    self.tf_parts.soft_h_index: soft_h_index,
-                    self.tf_parts.soft_r_index: soft_r_index,
-                    self.tf_parts.soft_t_index: soft_t_index,
-                    self.tf_parts.soft_w: soft_w_index, 
-                    self.tf_parts._lr: lr # Learning Rate
+                    self.model.A_h_index: A_h_index,
+                    self.model.A_r_index: A_r_index,
+                    self.model.A_t_index: A_t_index,
+                    self.model.A_w: A_w,
+                    self.model.A_neg_hn_index: A_neg_hn_index,
+                    self.model.A_neg_rel_hn_index: A_neg_rel_hn_index,
+                    self.model.A_neg_t_index: A_neg_t_index,
+                    self.model.A_neg_h_index: A_neg_h_index,
+                    self.model.A_neg_rel_tn_index: A_neg_rel_tn_index,
+                    self.model.A_neg_tn_index: A_neg_tn_index,
+                    self.model.soft_h_index: soft_h_index,
+                    self.model.soft_r_index: soft_r_index,
+                    self.model.soft_t_index: soft_t_index,
+                    self.model.soft_w: soft_w_index, 
+                    self.model.lr: lr # Learning Rate
                 })
             param.prior_psl = rule_prior
             train_loss.append(batch_loss)

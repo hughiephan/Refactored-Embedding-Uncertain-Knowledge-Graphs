@@ -31,7 +31,7 @@ class Data(object):
         # head per tail and tail per head (for each relation). used for bernoulli negative sampling
         self.hpt = np.array([0])
         self.tph = np.array([0])
-        # recorded for tf_parts
+        # recorded for model
         self.dim = 64
         self.batch_size = 1024
         self.L1 = False

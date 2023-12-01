@@ -18,7 +18,7 @@ from sklearn import tree
 from src.model import UKGE_LOGI, UKGE_RECT
 tf.disable_v2_behavior()
 
-# This class is used to load and combine a TF_Parts and a Data object, and provides some useful methods for training
+# This class is used to load and combine a model and a Data object, and provides some useful methods for training
 class Validator(object):
     class IndexScore:
         """
@@ -42,7 +42,7 @@ class Validator(object):
             return "(index: %d, w:%.3f)" % (self.index, self.score)
 
     def __init__(self):
-        self.tf_parts = None
+        self.model = None
         self.this_data = None
         self.vec_c = np.array([0])
         self.vec_r = np.array([0])
@@ -439,15 +439,15 @@ class UKGE_LOGI_VALIDATOR(Validator):
 
         # load tf model and embeddings
         model_save_path = join(model_dir, model_filename)
-        self.tf_parts = UKGE_LOGI(num_rels=self.this_data.num_rels(),
+        self.model = UKGE_LOGI(num_rels=self.this_data.num_rels(),
                                      num_cons=self.this_data.num_cons(),
                                      dim=self.this_data.dim,
                                      batch_size=self.this_data.batch_size, neg_per_positive=10, p_neg=1)
         # neg_per_positive, reg_scale and p_neg are not used in testing
         sess = tf.Session()
-        self.tf_parts._saver.restore(sess, model_save_path)  # load it
+        self.model.saver.restore(sess, model_save_path)  # load it
         value_ht, value_r, w, b = sess.run(
-            [self.tf_parts._ht, self.tf_parts._r, self.tf_parts.w, self.tf_parts.b])  # extract values.
+            [self.model._ht, self.model._r, self.model.w, self.model.b])  # extract values.
         sess.close()
         self.vec_c = np.array(value_ht)
         self.vec_r = np.array(value_r)
@@ -465,10 +465,10 @@ class UKGE_LOGI_VALIDATOR(Validator):
         self.this_data = this_data  # data.Data()
 
         self.test_triples = test_data
-        self.tf_parts = tf_model
+        self.model = tf_model
 
         value_ht, value_r, w, b = sess.run(
-            [self.tf_parts._ht, self.tf_parts._r, self.tf_parts.w, self.tf_parts.b])  # extract values.
+            [self.model._ht, self.model._r, self.model.w, self.model.b])  # extract values.
         self.vec_c = np.array(value_ht)
         self.vec_r = np.array(value_r)
         self.w = w
@@ -512,16 +512,16 @@ class UKGE_RECT_VALIDATOR(Validator):
 
         # reg_scale and neg_per_pos won't be used in the tf model during testing
         # just give any to build
-        self.tf_parts = UKGE_RECT(num_rels=self.this_data.num_rels(),
+        self.model = UKGE_RECT(num_rels=self.this_data.num_rels(),
                                      num_cons=self.this_data.num_cons(),
                                      dim=self.this_data.dim,
                                      batch_size=self.this_data.batch_size, neg_per_positive=10, reg_scale=0.1,
                                      p_neg=1)
         # neg_per_positive, reg_scale and p_neg are not used in testing
         sess = tf.Session()
-        self.tf_parts._saver.restore(sess, model_save_path)  # load it
+        self.model.saver.restore(sess, model_save_path)  # load it
         value_ht, value_r, w, b = sess.run(
-            [self.tf_parts._ht, self.tf_parts._r, self.tf_parts.w, self.tf_parts.b])  # extract values.
+            [self.model._ht, self.model._r, self.model.w, self.model.b])  # extract values.
         sess.close()
         self.vec_c = np.array(value_ht)
         self.vec_r = np.array(value_r)
@@ -538,10 +538,9 @@ class UKGE_RECT_VALIDATOR(Validator):
         self.this_data = this_data  # data.Data()
 
         self.test_triples = test_data
-        self.tf_parts = tf_model
+        self.model = tf_model
 
-        value_ht, value_r, w, b = sess.run(
-            [self.tf_parts._ht, self.tf_parts._r, self.tf_parts.w, self.tf_parts.b])  # extract values.
+        value_ht, value_r, w, b = sess.run([self.model._ht, self.model._r, self.model.w, self.model.b])  # extract values.
         self.vec_c = np.array(value_ht)
         self.vec_r = np.array(value_r)
         self.w = w

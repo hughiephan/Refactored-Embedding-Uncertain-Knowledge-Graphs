@@ -183,7 +183,7 @@ batchloader = BatchLoader(this_data, batch_size, neg_per_positive)
 
 `__init__` method initializes various parameters required for the UKGE Logistic Regression model, like the number of relations `num_rels`, number of ontologies `num_cons`, embedding dimensions `dim`, batch size `batch_size`, etc. It also sets default values for certain coefficients and variables used in the model.
 
-Then defines the placeholders for input data: `_A_*` placeholders for indices of entities and relations, `_soft_*` placeholders for uncertain graph and PSL-related data and initializes trainable variables with `ht` for entity embeddings, and `r` for relation embeddings. Embeddings for positive and negative samples are looked up from the embedding matrices using `tf.nn.embedding_lookup`. With `main_loss` computes the main loss for the model. It uses the embeddings to calculate scores for positive and negative samples and computes a loss based on the difference between these scores and the expected scores `A_w` placeholder. While `psl_loss` computes the loss related to Probabilistic Soft Logic (PSL). It involves calculating a probability based on uncertain graph embeddings and then calculating the error against expected soft constraints. And the `_opt` uses the Adam optimizer to minimize the combined loss `_A_loss`, which includes both the main loss and the PSL loss. `_train_op` applies the gradients computed by the optimizer to update the model parameters during training.
+Then defines the placeholders for input data: `_A_*` placeholders for indices of entities and relations, `_soft_*` placeholders for uncertain graph and PSL-related data and initializes trainable variables with `ht` for entity embeddings, and `r` for relation embeddings. Embeddings for positive and negative samples are looked up from the embedding matrices using `tf.nn.embedding_lookup`. With `main_loss` computes the main loss for the model. It uses the embeddings to calculate scores for positive and negative samples and computes a loss based on the difference between these scores and the expected scores `A_w` placeholder. While `psl_loss` computes the loss related to Probabilistic Soft Logic (PSL). It involves calculating a probability based on uncertain graph embeddings and then calculating the error against expected soft constraints. And the `opt` uses the Adam optimizer to minimize the combined loss `A_loss`, which includes both the main loss and the PSL loss. `train_op` applies the gradients computed by the optimizer to update the model parameters during training.
 
 ```python
 class UKGE_LOGI(object):
@@ -269,14 +269,14 @@ $$loss_{main} = \frac{\sum (\frac{f_{score_{tn}} + f_{score_{hn}}}{2} \times p_{
 
 ```python
         ...
-        self._htr = tf.reduce_sum(tf.multiply(self.r_batch, tf.multiply(self.h_batch, self.t_batch, "element_wise_multiply"),"r_product"), 1)
-        self._f_prob_h = tf.sigmoid(self.w * self._htr + self.b) # Logistic regression
-        self._f_score_h = tf.square(tf.subtract(self._f_prob_h, self.A_w))
-        self._f_prob_hn = tf.sigmoid(self.w * (tf.reduce_sum( tf.multiply(self.neg_rel_hn_batch, tf.multiply(self.neg_hn_con_batch, self.neg_t_con_batch)), 2)) + self.b)
-        self._f_score_hn = tf.reduce_mean(tf.square(self._f_prob_hn), 1)
-        self._f_prob_tn = tf.sigmoid(self.w * (tf.reduce_sum(tf.multiply(self.neg_rel_tn_batch, tf.multiply(self.neg_h_con_batch, self.neg_tn_con_batch)), 2)) + self.b)
-        self._f_score_tn = tf.reduce_mean(tf.square(self._f_prob_tn), 1)
-        self.main_loss = (tf.reduce_sum(tf.add(tf.divide(tf.add(self._f_score_tn, self._f_score_hn), 2) * self._p_neg, self._f_score_h))) / self._batch_size
+        self.htr = tf.reduce_sum(tf.multiply(self.r_batch, tf.multiply(self.h_batch, self.t_batch, "element_wise_multiply"),"r_product"), 1)
+        self.f_prob_h = tf.sigmoid(self.w * self.htr + self.b) # Logistic regression
+        self.f_score_h = tf.square(tf.subtract(self.f_prob_h, self.A_w))
+        self.f_prob_hn = tf.sigmoid(self.w * (tf.reduce_sum( tf.multiply(self.neg_rel_hn_batch, tf.multiply(self.neg_hn_con_batch, self.neg_t_con_batch)), 2)) + self.b)
+        self.f_score_hn = tf.reduce_mean(tf.square(self.f_prob_hn), 1)
+        self.f_prob_tn = tf.sigmoid(self.w * (tf.reduce_sum(tf.multiply(self.neg_rel_tn_batch, tf.multiply(self.neg_h_con_batch, self.neg_tn_con_batch)), 2)) + self.b)
+        self.f_score_tn = tf.reduce_mean(tf.square(self.f_prob_tn), 1)
+        self.main_loss = (tf.reduce_sum(tf.add(tf.divide(tf.add(self.f_score_tn, self.f_score_hn), 2) * self._p_neg, self.f_score_h))) / self._batch_size
         ...
 ```
 
@@ -308,11 +308,11 @@ $$loss_{A} = loss_{main} + loss_{psl}$$
 
 ```python
         ...
-        self._A_loss = tf.add(self.main_loss, self.psl_loss)
-        self._lr = tf.placeholder(tf.float32)
-        self._opt = tf.train.AdamOptimizer(self._lr)
-        self._gradient = self._opt.compute_gradients(self._A_loss) 
-        self._train_op = self._opt.apply_gradients(self._gradient)
+        self.A_loss = tf.add(self.main_loss, self.psl_loss)
+        self.lr = tf.placeholder(tf.float32)
+        self.opt = tf.train.AdamOptimizer(self.lr)
+        self.gradient = self.opt.compute_gradients(self.A_loss) 
+        self.train_op = self.opt.apply_gradients(self.gradient)
 ```
 
 ## Step 9: Model
@@ -346,12 +346,12 @@ for epoch in range(1, epochs + 1):
         soft_h_index, soft_r_index, soft_t_index, soft_w_index = batchloader.gen_psl_samples()  # length: param.n_psl
         _, gradient, batch_loss, psl_mse, mse_pos, mse_neg, main_loss, psl_prob, psl_mse_each, rule_prior = sess.run(
             [
-                model._train_op, 
-                model._gradient,
-                model._A_loss, # A_loss: Main Loss + PSL Loss
+                model.train_op, 
+                model.gradient,
+                model.A_loss, # A_loss: Main Loss + PSL Loss
                 model.psl_mse, 
-                model._f_score_h, 
-                model._f_score_hn,
+                model.f_score_h, 
+                model.f_score_hn,
                 model.main_loss, 
                 model.psl_prob, 
                 model.psl_error_each,
@@ -372,7 +372,7 @@ for epoch in range(1, epochs + 1):
                 model.soft_r_index: soft_r_index,
                 model.soft_t_index: soft_t_index,
                 model.soft_w: soft_w_index, 
-                model._lr: lr # Learning Rate
+                model.lr: lr # Learning Rate
             })
         prior_psl = rule_prior
         epoch_loss.append(batch_loss)

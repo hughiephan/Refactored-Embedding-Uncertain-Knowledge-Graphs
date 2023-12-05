@@ -81,55 +81,64 @@ soft_logic_triples = load_triples('/kaggle/input/cn15k-dataset/softlogic.tsv')
 ## Step 4: BatchLoader
 
 ```python
-class BatchLoader():
-    def __init__(self, triples, soft_logic_triples, cons, batch_size, neg_per_positive):
-        self.triples = triples
-        self.soft_logic_triples = soft_logic_triples
-        self.cons = cons
-        self.shuffle = True
-        self.batch_size = batch_size
-        self.neg_per_positive = neg_per_positive
-        self.n_soft_samples = 1  # number of samples per batch, n_psl
+def gen_psl_samples(soft_logic_triples):
+    n_soft_samples = 1
+    triple_indices = np.random.randint(0, soft_logic_triples.shape[0], size=n_soft_samples)
+    samples = soft_logic_triples[triple_indices, :]
+    soft_h, soft_r, soft_t, soft_lb = (
+        samples[:, 0].astype(int),
+        samples[:, 1].astype(int),
+        samples[:, 2].astype(int),
+        samples[:, 3],
+    )
+    soft_sample_batch = (soft_h, soft_r, soft_t, soft_lb)
+    return soft_sample_batch
 
-    def gen_psl_samples(self):
-        # samples from probabilistic soft logic
-        softlogics = self.soft_logic_triples  # [[A, B, base]]
-        triple_indices = np.random.randint(0, softlogics.shape[0], size=self.n_soft_samples)
-        samples = softlogics[triple_indices,:]
-        soft_h, soft_r, soft_t, soft_lb = samples[:,0].astype(int),samples[:,1].astype(int),samples[:,2].astype(int), samples[:,3]
-        soft_sample_batch = (soft_h, soft_r, soft_t, soft_lb)
-        return soft_sample_batch
+def corrupt_batch(h_batch, r_batch, t_batch, batch_size, neg_per_positive, cons):
+    N = len(cons)
+    neg_hn_batch = np.random.randint(0, N, size=(batch_size, neg_per_positive))
+    neg_rel_hn_batch = np.tile(r_batch, (neg_per_positive, 1)).transpose()
+    negt_batch = np.tile(t_batch, (neg_per_positive, 1)).transpose()
+    negh_batch = np.tile(h_batch, (neg_per_positive, 1)).transpose()
+    neg_rel_tn_batch = neg_rel_hn_batch
+    neg_tn_batch = np.random.randint(0, N, size=(batch_size, neg_per_positive))
+    return neg_hn_batch, neg_rel_hn_batch, negt_batch, negh_batch, neg_rel_tn_batch, neg_tn_batch
 
-    def gen_batch(self, forever=False, shuffle=True):
-        l = self.triples.shape[0]
-        while True:
-            triples = self.triples  # np.float64 [[h,r,t,w]]
-            if shuffle:
-                np.random.shuffle(triples)
-            for i in range(0, l, self.batch_size):
-                batch = triples[i: i + self.batch_size, :]
-                if batch.shape[0] < self.batch_size:
-                    batch = np.concatenate((batch, self.triples[:self.batch_size - batch.shape[0]]), axis=0)
-                    assert batch.shape[0] == self.batch_size
-                h_batch, r_batch, t_batch, w_batch = batch[:, 0].astype(int), batch[:, 1].astype(int), batch[:, 2].astype(int), batch[:, 3]
-                hrt_batch = batch[:, 0:3].astype(int)
-                neg_hn_batch, neg_rel_hn_batch, negt_batch, negh_batch, neg_rel_tn_batch, neg_tn_batch = self.corrupt_batch(h_batch, r_batch, t_batch)
-                yield h_batch.astype(np.int64), r_batch.astype(np.int64), t_batch.astype(np.int64), w_batch.astype(np.float32), neg_hn_batch.astype(np.int64), neg_rel_hn_batch.astype(np.int64), negt_batch.astype(np.int64), negh_batch.astype(np.int64), neg_rel_tn_batch.astype(np.int64), neg_tn_batch.astype(np.int64)
-            if not forever:
-                break
-
-    def corrupt_batch(self, h_batch, r_batch, t_batch):
-        N = len(self.cons)  # number of entities
-        neg_hn_batch = np.random.randint(0, N, size=(self.batch_size, self.neg_per_positive))  # random index without filtering
-        neg_rel_hn_batch = np.tile(r_batch, (self.neg_per_positive, 1)).transpose()  # copy
-        negt_batch = np.tile(t_batch, (self.neg_per_positive, 1)).transpose()
-        negh_batch = np.tile(h_batch, (self.neg_per_positive, 1)).transpose()
-        neg_rel_tn_batch = neg_rel_hn_batch
-        neg_tn_batch = np.random.randint(0, N, size=(self.batch_size, self.neg_per_positive))
-        return neg_hn_batch, neg_rel_hn_batch, negt_batch, negh_batch, neg_rel_tn_batch, neg_tn_batch
-    
-    
-batchloader = BatchLoader(triples, soft_logic_triples, cons, batch_size, neg_per_positive)
+def gen_batch(triples, batch_size, neg_per_positive, cons):
+    l = triples.shape[0]
+    while True:
+        np.random.shuffle(triples)
+        for i in range(0, l, batch_size):
+            batch = triples[i : i + batch_size, :]
+            if batch.shape[0] < batch_size:
+                batch = np.concatenate(
+                    (batch, triples[:batch_size - batch.shape[0]]), axis=0
+                )
+                assert batch.shape[0] == batch_size
+            h_batch, r_batch, t_batch, w_batch = (
+                batch[:, 0].astype(int),
+                batch[:, 1].astype(int),
+                batch[:, 2].astype(int),
+                batch[:, 3],
+            )
+            hrt_batch = batch[:, 0:3].astype(int)
+            neg_hn_batch, neg_rel_hn_batch, negt_batch, negh_batch, neg_rel_tn_batch, neg_tn_batch = corrupt_batch(
+                h_batch, r_batch, t_batch, batch_size, neg_per_positive, cons
+            )
+            yield (
+                h_batch.astype(np.int64),
+                r_batch.astype(np.int64),
+                t_batch.astype(np.int64),
+                w_batch.astype(np.float32),
+                neg_hn_batch.astype(np.int64),
+                neg_rel_hn_batch.astype(np.int64),
+                negt_batch.astype(np.int64),
+                negh_batch.astype(np.int64),
+                neg_rel_tn_batch.astype(np.int64),
+                neg_tn_batch.astype(np.int64),
+            )
+        if not forever:
+            break
 ```
 
 ## Step 5: Define UKGE LOGI Model
@@ -290,12 +299,12 @@ print('Number of batches per epoch: %d' % num_batch)
 train_losses = []  # [[every epoch, loss]]
 val_losses = []  # [[saver epoch, loss]]
 for epoch in range(1, epochs + 1):
-    generated_batch = batchloader.gen_batch(forever=True)
+    generated_batch = gen_batch(triples, batch_size, neg_per_positive, cons)
     epoch_loss = []
     for batch_id in range(num_batch):
         batch = next(generated_batch)
         A_h_index, A_r_index, A_t_index, A_w, A_neg_hn_index, A_neg_rel_hn_index, A_neg_t_index, A_neg_h_index, A_neg_rel_tn_index, A_neg_tn_index = batch
-        soft_h_index, soft_r_index, soft_t_index, soft_w_index = batchloader.gen_psl_samples()  # length: param.n_psl
+        soft_h_index, soft_r_index, soft_t_index, soft_w_index = gen_psl_samples(soft_logic_triples)
         _, gradient, A_loss, psl_mse, mse_pos, mse_neg, main_loss, psl_prob, psl_mse_each, rule_prior = sess.run(
             [
                 model.train_op, 

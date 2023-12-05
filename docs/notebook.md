@@ -32,66 +32,72 @@ lr=0.001
 We define a new class to load the triplets in the CN15K dataset. It will have a batch function to load the data by batches instead of separate data points. The class also have the corrupt function to corrupt some samples for testing the model.
 
 ```python
-class Data(object):
-    def __init__(self):
-        self.cons = [] # Concept vocab
-        self.rels = [] # Relation vocab
-        self.index_cons = {}  # {string: index}
-        self.index_rels = {}  # {string: index}
-        self.triples = np.array([0])  # training dataset
-        self.val_triples = np.array([0])  # validation dataset
-        self.soft_logic_triples = np.array([0]) # (h,r,t) tuples(int), no w
-        self.triples_record = set([]) # set containing train, val, test (for negative sampling).
-        self.weights = np.array([0])
-        self.neg_triples = np.array([0])
-        self.dim = 64 
-        self.batch_size = 1024
-        self.L1 = False
+import numpy as np
 
-    def load_triples(self, filename, splitter='\t', line_end='\n'):
-        '''Load the dataset'''
-        triples = []
-        last_c = -1
-        last_r = -1
-        for line in open(filename):
-            line = line.rstrip(line_end).split(splitter)
-            if self.index_cons.get(line[0]) == None:
-                self.cons.append(line[0])
-                last_c += 1
-                self.index_cons[line[0]] = last_c
-            if self.index_cons.get(line[2]) == None:
-                self.cons.append(line[2])
-                last_c += 1
-                self.index_cons[line[2]] = last_c
-            if self.index_rels.get(line[1]) == None:
-                self.rels.append(line[1])
-                last_r += 1
-                self.index_rels[line[1]] = last_r
-            h = self.index_cons[line[0]]
-            r = self.index_rels[line[1]]
-            t = self.index_cons[line[2]]
-            w = float(line[3])
-            triples.append([h, r, t, w])
-            self.triples_record.add((h, r, t))
-        return np.array(triples)
+# Initialize individual variables
+cons = []  # Concept vocab
+rels = []  # Relation vocab
+index_cons = {}  # {string: index}
+index_rels = {}  # {string: index}
+triples = np.array([0])  # Training dataset
+val_triples = np.array([0])  # Validation dataset
+soft_logic_triples = np.array([0])  # (h,r,t) tuples(int), no w
+triples_record = set([])  # Set containing train, val, test (for negative sampling)
+weights = np.array([0])
+neg_triples = np.array([0])
+dim = 64
+batch_size = 1024
+L1 = False
 
-    def load_data(self, file_train, file_val, file_psl=None, splitter='\t', line_end='\n'):
-        self.triples = self.load_triples(file_train, splitter, line_end)
-        self.val_triples = self.load_triples(file_val, splitter, line_end)
-        self.soft_logic_triples = self.load_triples(file_psl, splitter, line_end)
-        
-this_data = Data()
-this_data.load_data(file_train='/kaggle/input/cn15k-dataset/train.tsv', 
-                file_val='/kaggle/input/cn15k-dataset/val.tsv', 
-                file_psl='/kaggle/input/cn15k-dataset/softlogic.tsv')
+# Load triples function
+def load_triples(filename, splitter='\t', line_end='\n'):
+    triples_loaded = []
+    last_c = -1
+    last_r = -1
+    for line in open(filename):
+        line = line.rstrip(line_end).split(splitter)
+        if index_cons.get(line[0]) is None:
+            cons.append(line[0])
+            last_c += 1
+            index_cons[line[0]] = last_c
+        if index_cons.get(line[2]) is None:
+            cons.append(line[2])
+            last_c += 1
+            index_cons[line[2]] = last_c
+        if index_rels.get(line[1]) is None:
+            rels.append(line[1])
+            last_r += 1
+            index_rels[line[1]] = last_r
+        h = index_cons[line[0]]
+        r = index_rels[line[1]]
+        t = index_cons[line[2]]
+        w = float(line[3])
+        triples_loaded.append([h, r, t, w])
+        triples_record.add((h, r, t))
+    return np.array(triples_loaded)
+
+# Load data function
+def load_data(file_train, file_val, file_psl=None, splitter='\t', line_end='\n'):
+    triples = load_triples(file_train, splitter, line_end)
+    val_triples = load_triples(file_val, splitter, line_end)
+    soft_logic_triples = load_triples(file_psl, splitter, line_end)
+    return triples, val_triples, soft_logic_triples
+    
+
+# Usage
+triples, val_triples, soft_logic_triples = load_data(file_train='/kaggle/input/cn15k-dataset/train.tsv', 
+                                                      file_val='/kaggle/input/cn15k-dataset/val.tsv', 
+                                                      file_psl='/kaggle/input/cn15k-dataset/softlogic.tsv')
 ```
 
 ## Step 4: BatchLoader
 
 ```python
 class BatchLoader():
-    def __init__(self, data_obj, batch_size, neg_per_positive):
-        self.this_data = data_obj  # Data() object
+    def __init__(self, triples, soft_logic_triples, cons, batch_size, neg_per_positive):
+        self.triples = triples
+        self.soft_logic_triples = soft_logic_triples
+        self.cons = cons
         self.shuffle = True
         self.batch_size = batch_size
         self.neg_per_positive = neg_per_positive
@@ -99,7 +105,7 @@ class BatchLoader():
 
     def gen_psl_samples(self):
         # samples from probabilistic soft logic
-        softlogics = self.this_data.soft_logic_triples  # [[A, B, base]]
+        softlogics = self.soft_logic_triples  # [[A, B, base]]
         triple_indices = np.random.randint(0, softlogics.shape[0], size=self.n_soft_samples)
         samples = softlogics[triple_indices,:]
         soft_h, soft_r, soft_t, soft_lb = samples[:,0].astype(int),samples[:,1].astype(int),samples[:,2].astype(int), samples[:,3]
@@ -107,15 +113,15 @@ class BatchLoader():
         return soft_sample_batch
 
     def gen_batch(self, forever=False, shuffle=True):
-        l = self.this_data.triples.shape[0]
+        l = self.triples.shape[0]
         while True:
-            triples = self.this_data.triples  # np.float64 [[h,r,t,w]]
+            triples = self.triples  # np.float64 [[h,r,t,w]]
             if shuffle:
                 np.random.shuffle(triples)
             for i in range(0, l, self.batch_size):
                 batch = triples[i: i + self.batch_size, :]
                 if batch.shape[0] < self.batch_size:
-                    batch = np.concatenate((batch, self.this_data.triples[:self.batch_size - batch.shape[0]]), axis=0)
+                    batch = np.concatenate((batch, self.triples[:self.batch_size - batch.shape[0]]), axis=0)
                     assert batch.shape[0] == self.batch_size
                 h_batch, r_batch, t_batch, w_batch = batch[:, 0].astype(int), batch[:, 1].astype(int), batch[:, 2].astype(int), batch[:, 3]
                 hrt_batch = batch[:, 0:3].astype(int)
@@ -125,7 +131,7 @@ class BatchLoader():
                 break
 
     def corrupt_batch(self, h_batch, r_batch, t_batch):
-        N = len(self.this_data.cons)  # number of entities
+        N = len(self.cons)  # number of entities
         neg_hn_batch = np.random.randint(0, N, size=(self.batch_size, self.neg_per_positive))  # random index without filtering
         neg_rel_hn_batch = np.tile(r_batch, (self.neg_per_positive, 1)).transpose()  # copy
         negt_batch = np.tile(t_batch, (self.neg_per_positive, 1)).transpose()
@@ -133,8 +139,9 @@ class BatchLoader():
         neg_rel_tn_batch = neg_rel_hn_batch
         neg_tn_batch = np.random.randint(0, N, size=(self.batch_size, self.neg_per_positive))
         return neg_hn_batch, neg_rel_hn_batch, negt_batch, negh_batch, neg_rel_tn_batch, neg_tn_batch
-
-batchloader = BatchLoader(this_data, batch_size, neg_per_positive)
+    
+    
+batchloader = BatchLoader(triples, soft_logic_triples, cons, batch_size, neg_per_positive)
 ```
 
 ## Step 5: Define UKGE LOGI Model
@@ -274,10 +281,10 @@ $$loss_{A} = loss_{main} + loss_{psl}$$
 
 ## Step 9: Model
 ```python
-model = UKGE_LOGI(num_rels = len(this_data.rels),
-                num_cons = len(this_data.cons),
-                dim = this_data.dim,
-                batch_size = this_data.batch_size, 
+model = UKGE_LOGI(num_rels = len(rels),
+                num_cons = len(cons),
+                dim = dim,
+                batch_size = batch_size, 
                 neg_per_positive = 10, 
                 p_neg = 1)
 model.build()

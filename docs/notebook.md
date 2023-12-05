@@ -45,8 +45,12 @@ L1 = False
 
 We define a new class to load the triplets in the CN15K dataset. It will have a batch function to load the data by batches instead of separate data points. The class also have the corrupt function to corrupt some samples for testing the model.
 
+![image](https://github.com/hughiephan/UKGE/assets/16631121/4f5c5580-6e9e-4755-9977-4f2a2fc09602)
+
 ```python
-def load_triples(filename, splitter='\t', line_end='\n'):
+def load_triples(filename):
+    splitter='\t'
+    line_end='\n'
     triples = []
     last_c = -1
     last_r = -1
@@ -71,15 +75,9 @@ def load_triples(filename, splitter='\t', line_end='\n'):
         triples.append([h, r, t, w])
     return np.array(triples)
 
-def load_data(file_train, file_val, file_psl=None, splitter='\t', line_end='\n'):
-    triples = load_triples(file_train, splitter, line_end)
-    val_triples = load_triples(file_val, splitter, line_end)
-    soft_logic_triples = load_triples(file_psl, splitter, line_end)
-    return triples, val_triples, soft_logic_triples
-
-triples, val_triples, soft_logic_triples = load_data(file_train='/kaggle/input/cn15k-dataset/train.tsv', 
-                                                      file_val='/kaggle/input/cn15k-dataset/val.tsv', 
-                                                      file_psl='/kaggle/input/cn15k-dataset/softlogic.tsv')
+triples = load_triples('/kaggle/input/cn15k-dataset/train.tsv')
+val_triples = load_triples('/kaggle/input/cn15k-dataset/val.tsv')
+soft_logic_triples = load_data(''/kaggle/input/cn15k-dataset/softlogic.tsv')
 ```
 
 ## Step 4: BatchLoader

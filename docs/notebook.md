@@ -78,8 +78,7 @@ class Data(object):
     def load_data(self, file_train, file_val, file_psl=None, splitter='\t', line_end='\n'):
         self.triples = self.load_triples(file_train, splitter, line_end)
         self.val_triples = self.load_triples(file_val, splitter, line_end)
-        if file_psl is not None:
-            self.soft_logic_triples = self.load_triples(file_psl, splitter, line_end)
+        self.soft_logic_triples = self.load_triples(file_psl, splitter, line_end)
         
 this_data = Data()
 this_data.load_data(file_train='/kaggle/input/cn15k-dataset/train.tsv', 

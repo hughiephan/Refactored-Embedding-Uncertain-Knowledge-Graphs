@@ -46,9 +46,8 @@ L1 = False
 We define a new class to load the triplets in the CN15K dataset. It will have a batch function to load the data by batches instead of separate data points. The class also have the corrupt function to corrupt some samples for testing the model.
 
 ```python
-# Load triples function
 def load_triples(filename, splitter='\t', line_end='\n'):
-    triples_loaded = []
+    triples = []
     last_c = -1
     last_r = -1
     for line in open(filename):
@@ -69,18 +68,15 @@ def load_triples(filename, splitter='\t', line_end='\n'):
         r = index_rels[line[1]]
         t = index_cons[line[2]]
         w = float(line[3])
-        triples_loaded.append([h, r, t, w])
-        triples_record.add((h, r, t))
-    return np.array(triples_loaded)
+        triples.append([h, r, t, w])
+    return np.array(triples)
 
-# Load data function
 def load_data(file_train, file_val, file_psl=None, splitter='\t', line_end='\n'):
     triples = load_triples(file_train, splitter, line_end)
     val_triples = load_triples(file_val, splitter, line_end)
     soft_logic_triples = load_triples(file_psl, splitter, line_end)
     return triples, val_triples, soft_logic_triples
-    
-# Usage
+
 triples, val_triples, soft_logic_triples = load_data(file_train='/kaggle/input/cn15k-dataset/train.tsv', 
                                                       file_val='/kaggle/input/cn15k-dataset/val.tsv', 
                                                       file_psl='/kaggle/input/cn15k-dataset/softlogic.tsv')

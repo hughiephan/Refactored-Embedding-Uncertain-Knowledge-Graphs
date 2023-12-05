@@ -45,7 +45,7 @@ L1 = False
 
 We define a new class to load the triplets in the CN15K dataset. It will have a batch function to load the data by batches instead of separate data points. The class also have the corrupt function to corrupt some samples for testing the model.
 
-![image](https://github.com/hughiephan/UKGE/assets/16631121/4f5c5580-6e9e-4755-9977-4f2a2fc09602)
+![image](https://github.com/hughiephan/UKGE/assets/16631121/c20e2482-159b-403e-afe6-c640de6a4817)
 
 ```python
 def load_triples(filename):

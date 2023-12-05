@@ -49,13 +49,11 @@ We define a new class to load the triplets in the CN15K dataset. It will have a 
 
 ```python
 def load_triples(filename):
-    splitter='\t'
-    line_end='\n'
     triples = []
     last_c = -1
     last_r = -1
     for line in open(filename):
-        line = line.rstrip(line_end).split(splitter)
+        line = line.rstrip('\n').split('\t')
         if index_cons.get(line[0]) is None:
             cons.append(line[0])
             last_c += 1

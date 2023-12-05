@@ -226,12 +226,12 @@ $$loss_{main} = \frac{\sum (\frac{f_{score_{tn}} + f_{score_{hn}}}{2} \times p_{
         ...
         self.htr = tf.reduce_sum(tf.multiply(self.r_batch, tf.multiply(self.h_batch, self.t_batch, "element_wise_multiply"),"r_product"), 1)
         self.f_prob_h = tf.sigmoid(self.w * self.htr + self.b) # Logistic regression
-        self.f_score_h = tf.square(tf.subtract(self.f_prob_h, self.A_w))
+        self.mse_pos = tf.square(tf.subtract(self.f_prob_h, self.A_w))
         self.f_prob_hn = tf.sigmoid(self.w * (tf.reduce_sum( tf.multiply(self.neg_rel_hn_batch, tf.multiply(self.neg_hn_con_batch, self.neg_t_con_batch)), 2)) + self.b)
-        self.f_score_hn = tf.reduce_mean(tf.square(self.f_prob_hn), 1)
+        self.mse_neg = tf.reduce_mean(tf.square(self.f_prob_hn), 1)
         self.f_prob_tn = tf.sigmoid(self.w * (tf.reduce_sum(tf.multiply(self.neg_rel_tn_batch, tf.multiply(self.neg_h_con_batch, self.neg_tn_con_batch)), 2)) + self.b)
         self.f_score_tn = tf.reduce_mean(tf.square(self.f_prob_tn), 1)
-        self.main_loss = (tf.reduce_sum(tf.add(tf.divide(tf.add(self.f_score_tn, self.f_score_hn), 2) * self.p_neg, self.f_score_h))) / self.batch_size
+        self.main_loss = (tf.reduce_sum(tf.add(tf.divide(tf.add(self.f_score_tn, self.mse_neg), 2) * self.p_neg, self.mse_pos))) / self.batch_size
         ...
 ```
 
@@ -299,14 +299,14 @@ for epoch in range(1, epochs + 1):
         batch = next(generated_batch)
         A_h_index, A_r_index, A_t_index, A_w, A_neg_hn_index, A_neg_rel_hn_index, A_neg_t_index, A_neg_h_index, A_neg_rel_tn_index, A_neg_tn_index = batch
         soft_h_index, soft_r_index, soft_t_index, soft_w_index = gen_psl_samples(soft_logic_triples)
-        _, gradient, A_loss, psl_mse, mse_pos, mse_neg, main_loss, psl_prob, psl_mse_each, rule_prior = sess.run(
+        _, gradient, A_loss, psl_mse, mse_pos, mse_neg, main_loss, psl_prob, psl_mse_each, _ = sess.run(
             [
                 model.train_op, 
                 model.gradient,
                 model.A_loss,
                 model.psl_mse, 
-                model.f_score_h, 
-                model.f_score_hn,
+                model.mse_pos, 
+                model.mse_neg,
                 model.main_loss, 
                 model.psl_prob, 
                 model.psl_error_each,
@@ -329,7 +329,6 @@ for epoch in range(1, epochs + 1):
                 model.soft_w: soft_w_index, 
                 model.lr: lr # Learning Rate
             })
-        prior_psl = rule_prior
         epoch_loss.append(A_loss)
         if ((batch_id + 1) % 50 == 0) or batch_id == num_batch - 1:
             print('process: %d / %d. Epoch %d' % (batch_id + 1, num_batch, epoch))

@@ -2,7 +2,7 @@
 
 ![image](https://github.com/hughiephan/UKGE/assets/16631121/8f6e9632-3342-461c-b9cb-4611d8a29c88)
 
-This Notebook is extracted with only the crucial parts from UKGE Codebase so some parts like Validator, RECT, @property and other datasets like PPI5k, NL27K was not included for a thorough understanding.
+This Notebook is extracted with only the crucial parts from UKGE Codebase so some parts like Validator, RECT, @property and other datasets like PPI5k, NL27K was not included for a thorough understanding. If you want to run on Validation Data as well, please run the UKGE Codebase as this Notebook is focus on explaining the concept not for benchmarking.
 
 Prerequisite:
 - Create a new blank Notebook in Kaggle: https://kaggle.com
@@ -74,9 +74,9 @@ soft_logic_triples = load_triples('/kaggle/input/cn15k-dataset/softlogic.tsv')
 ## Step 4: Soft Index
 
 ```python
-n_soft_samples = 1
+n_soft_samples = 2
 triple_indices = np.random.randint(0, soft_logic_triples.shape[0], size=n_soft_samples)
-samples = soft_logic_triples[triple_indices, :]
+samples = soft_logic_triples[triple_indices]
 soft_h_index, soft_r_index, soft_t_index, soft_w_index = (
     samples[:, 0].astype(int),
     samples[:, 1].astype(int),
@@ -84,6 +84,9 @@ soft_h_index, soft_r_index, soft_t_index, soft_w_index = (
     samples[:, 3],
 )
 ```
+
+![image](https://github.com/hughiephan/UKGE/assets/16631121/2bacafc0-0e11-467d-9a3a-e31c565e8f26)
+
 
 ## Step 5: Gen and corrupt batch
 ```python
@@ -327,5 +330,10 @@ Here's the result:
 
 ![image](https://github.com/hughiephan/UKGE/assets/16631121/f0b4d7f5-62c4-4755-b9a5-85f1e54fef43)
 
-## (Optional) Step 12: Validation
-If you want Validation Data, please run the UKGE Codebase as this Notebook is focus on explaining the concept not for benchmarking
+## Debugging (Optional)
+```
+print("Total of soft_logic_triples:", soft_logic_triples.shape[0])
+print("Pick indices by random triple_indices:", triple_indices)
+print("Sample of", triple_indices[0],":", samples[0])
+print("Round up Sample", triple_indices[0], ":", soft_h_index[0], soft_r_index[0], soft_t_index[0], soft_w_index[0])
+```

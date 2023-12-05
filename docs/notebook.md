@@ -90,6 +90,9 @@ soft_h_index, soft_r_index, soft_t_index, soft_w_index = (
 ![image](https://github.com/hughiephan/UKGE/assets/16631121/d884e7cd-1445-4df0-b000-9f483d431ee5)
 
 ## Step 5: Gen and corrupt batch
+
+![image](https://github.com/hughiephan/UKGE/assets/16631121/1306c22f-3c12-47f8-8d9b-0912bd952525)
+
 ```python
 def gen_and_corrupt_batch(triples, batch_size, neg_per_positive, cons):
     N = len(cons)
@@ -112,11 +115,11 @@ def gen_and_corrupt_batch(triples, batch_size, neg_per_positive, cons):
             
             # Corrupt Batch
             neg_hn_batch = np.random.randint(0, N, size=(batch_size, neg_per_positive))
-            neg_rel_hn_batch = np.tile(r_batch, (neg_per_positive, 1)).transpose()
+            neg_tn_batch = np.random.randint(0, N, size=(batch_size, neg_per_positive))
             negt_batch = np.tile(t_batch, (neg_per_positive, 1)).transpose()
             negh_batch = np.tile(h_batch, (neg_per_positive, 1)).transpose()
+            neg_rel_hn_batch = np.tile(r_batch, (neg_per_positive, 1)).transpose()
             neg_rel_tn_batch = neg_rel_hn_batch
-            neg_tn_batch = np.random.randint(0, N, size=(batch_size, neg_per_positive))
             
             yield (
                 h_batch.astype(np.int64),

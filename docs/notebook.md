@@ -154,34 +154,33 @@ class UKGE_LOGI(object):
         '''
         Initialize the variables
         '''
-        self._num_rels = num_rels # Number of relations
-        self._num_cons = num_cons # Number of ontologies
-        self._dim = dim  # Dimension of both relation and ontology.
-        self._neg_per_positive = neg_per_positive # Number of negative samples per (h,r,t)
-        self._p_psl = 0.2 # Coefficient
-        self._p_neg = 1
-        self._batch_size = batch_size
-        self._epoch_loss = 0 
-        self._soft_size = 1
-        self._prior_psl = 0
+        self.num_rels = num_rels # Number of relations
+        self.num_cons = num_cons # Number of ontologies
+        self.dim = dim  # Dimension of both relation and ontology.
+        self.neg_per_positive = neg_per_positive # Number of negative samples per (h,r,t)
+        self.batch_size = batch_size
+        self.p_psl = 0.2 # Coefficient
+        self.p_neg = 1
+        self.soft_size = 1
+        self.prior_psl = 0
 
     def build(self):
         tf.reset_default_graph()
         with tf.variable_scope("graph", initializer=tf.truncated_normal_initializer(0, 0.3)):
             # Variables (matrix of embeddings/transformations)
-            self._ht = ht = tf.get_variable(name='ht', shape=[self._num_cons, self._dim], dtype=tf.float32)
-            self._r = r = tf.get_variable(name='r', shape=[self._num_rels, self._dim], dtype=tf.float32)
-            self.A_h_index = tf.placeholder(dtype=tf.int64, shape=[self._batch_size], name='A_h_index')
-            self.A_r_index = tf.placeholder(dtype=tf.int64, shape=[self._batch_size], name='A_r_index')
-            self.A_t_index = tf.placeholder(dtype=tf.int64, shape=[self._batch_size], name='A_t_index')
+            self._ht = ht = tf.get_variable(name='ht', shape=[self.num_cons, self.dim], dtype=tf.float32)
+            self._r = r = tf.get_variable(name='r', shape=[self.num_rels, self.dim], dtype=tf.float32)
+            self.A_h_index = tf.placeholder(dtype=tf.int64, shape=[self.batch_size], name='A_h_index')
+            self.A_r_index = tf.placeholder(dtype=tf.int64, shape=[self.batch_size], name='A_r_index')
+            self.A_t_index = tf.placeholder(dtype=tf.int64, shape=[self.batch_size], name='A_t_index')
             # for uncertain graph
-            self.A_w = tf.placeholder(dtype=tf.float32, shape=[self._batch_size], name='A_w')
-            self.A_neg_hn_index = tf.placeholder(dtype=tf.int64, shape=(self._batch_size, self._neg_per_positive), name='A_neg_hn_index')
-            self.A_neg_rel_hn_index = tf.placeholder(dtype=tf.int64, shape=(self._batch_size, self._neg_per_positive), name='A_neg_rel_hn_index')
-            self.A_neg_t_index = tf.placeholder(dtype=tf.int64, shape=(self._batch_size, self._neg_per_positive), name='A_neg_t_index')
-            self.A_neg_h_index = tf.placeholder(dtype=tf.int64, shape=(self._batch_size, self._neg_per_positive), name='A_neg_h_index')
-            self.A_neg_rel_tn_index = tf.placeholder(dtype=tf.int64, shape=(self._batch_size, self._neg_per_positive), name='A_neg_rel_tn_index')
-            self.A_neg_tn_index = tf.placeholder(dtype=tf.int64, shape=(self._batch_size, self._neg_per_positive), name='A_neg_tn_index')
+            self.A_w = tf.placeholder(dtype=tf.float32, shape=[self.batch_size], name='A_w')
+            self.A_neg_hn_index = tf.placeholder(dtype=tf.int64, shape=(self.batch_size, self.neg_per_positive), name='A_neg_hn_index')
+            self.A_neg_rel_hn_index = tf.placeholder(dtype=tf.int64, shape=(self.batch_size, self.neg_per_positive), name='A_neg_rel_hn_index')
+            self.A_neg_t_index = tf.placeholder(dtype=tf.int64, shape=(self.batch_size, self.neg_per_positive), name='A_neg_t_index')
+            self.A_neg_h_index = tf.placeholder(dtype=tf.int64, shape=(self.batch_size, self.neg_per_positive), name='A_neg_h_index')
+            self.A_neg_rel_tn_index = tf.placeholder(dtype=tf.int64, shape=(self.batch_size, self.neg_per_positive), name='A_neg_rel_tn_index')
+            self.A_neg_tn_index = tf.placeholder(dtype=tf.int64, shape=(self.batch_size, self.neg_per_positive), name='A_neg_tn_index')
             # no normalization
             self.h_batch = tf.nn.embedding_lookup(ht, self.A_h_index)
             self.t_batch = tf.nn.embedding_lookup(ht, self.A_t_index)
@@ -193,11 +192,11 @@ class UKGE_LOGI(object):
             self.neg_rel_tn_batch = tf.nn.embedding_lookup(r, self.A_neg_rel_tn_index)
             self.neg_tn_con_batch = tf.nn.embedding_lookup(ht, self.A_neg_tn_index)
             # psl batches
-            self.soft_h_index = tf.placeholder(dtype=tf.int64, shape=[self._soft_size], name='soft_h_index')
-            self.soft_r_index = tf.placeholder(dtype=tf.int64, shape=[self._soft_size], name='soft_r_index')
-            self.soft_t_index = tf.placeholder(dtype=tf.int64, shape=[self._soft_size], name='soft_t_index')
+            self.soft_h_index = tf.placeholder(dtype=tf.int64, shape=[self.soft_size], name='soft_h_index')
+            self.soft_r_index = tf.placeholder(dtype=tf.int64, shape=[self.soft_size], name='soft_r_index')
+            self.soft_t_index = tf.placeholder(dtype=tf.int64, shape=[self.soft_size], name='soft_t_index')
             # for uncertain graph and psl
-            self.soft_w = tf.placeholder(dtype=tf.float32, shape=[self._soft_size], name='soft_w_lower_bound')
+            self.soft_w = tf.placeholder(dtype=tf.float32, shape=[self.soft_size], name='soft_w_lower_bound')
             self.softh_batch = tf.nn.embedding_lookup(ht, self.soft_h_index)
             self.softt_batch = tf.nn.embedding_lookup(ht, self.soft_t_index)
             self.softr_batch = tf.nn.embedding_lookup(r, self.soft_r_index)
@@ -235,7 +234,7 @@ $$loss_{main} = \frac{\sum (\frac{f_{score_{tn}} + f_{score_{hn}}}{2} \times p_{
         self.f_score_hn = tf.reduce_mean(tf.square(self.f_prob_hn), 1)
         self.f_prob_tn = tf.sigmoid(self.w * (tf.reduce_sum(tf.multiply(self.neg_rel_tn_batch, tf.multiply(self.neg_h_con_batch, self.neg_tn_con_batch)), 2)) + self.b)
         self.f_score_tn = tf.reduce_mean(tf.square(self.f_prob_tn), 1)
-        self.main_loss = (tf.reduce_sum(tf.add(tf.divide(tf.add(self.f_score_tn, self.f_score_hn), 2) * self._p_neg, self.f_score_h))) / self._batch_size
+        self.main_loss = (tf.reduce_sum(tf.add(tf.divide(tf.add(self.f_score_tn, self.f_score_hn), 2) * self.p_neg, self.f_score_h))) / self.batch_size
         ...
 ```
 
@@ -254,10 +253,10 @@ With $\text{p-psl}$ is coefficient, and `prior_psl0` is just a constant 0, and p
 ```python
         ....
         self.psl_prob = tf.sigmoid(self.w*tf.reduce_sum(tf.multiply(self.softr_batch, tf.multiply(self.softh_batch, self.softt_batch)), 1)+self.b)
-        self.prior_psl0 = tf.constant(self._prior_psl, tf.float32)
+        self.prior_psl0 = tf.constant(self.prior_psl, tf.float32)
         self.psl_error_each = tf.square(tf.maximum(self.soft_w + self.prior_psl0 - self.psl_prob, 0))
         self.psl_mse = tf.reduce_mean(self.psl_error_each)
-        self.psl_loss = self.psl_mse * self._p_psl
+        self.psl_loss = self.psl_mse * self.p_psl
         ...
 ```
 

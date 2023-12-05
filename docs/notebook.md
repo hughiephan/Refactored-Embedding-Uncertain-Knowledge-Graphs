@@ -74,7 +74,7 @@ soft_logic_triples = load_triples('/kaggle/input/cn15k-dataset/softlogic.tsv')
 ## Step 4: Soft Index
 
 ```python
-n_soft_samples = 2
+n_soft_samples = 1
 triple_indices = np.random.randint(0, soft_logic_triples.shape[0], size=n_soft_samples)
 samples = soft_logic_triples[triple_indices]
 soft_h_index, soft_r_index, soft_t_index, soft_w_index = (
@@ -85,8 +85,7 @@ soft_h_index, soft_r_index, soft_t_index, soft_w_index = (
 )
 ```
 
-![image](https://github.com/hughiephan/UKGE/assets/16631121/2bacafc0-0e11-467d-9a3a-e31c565e8f26)
-
+![image](https://github.com/hughiephan/UKGE/assets/16631121/d884e7cd-1445-4df0-b000-9f483d431ee5)
 
 ## Step 5: Gen and corrupt batch
 ```python
@@ -331,7 +330,7 @@ Here's the result:
 ![image](https://github.com/hughiephan/UKGE/assets/16631121/f0b4d7f5-62c4-4755-b9a5-85f1e54fef43)
 
 ## Debugging (Optional)
-```
+```python
 print("Total of soft_logic_triples:", soft_logic_triples.shape[0])
 print("Pick indices by random triple_indices:", triple_indices)
 print("Sample of", triple_indices[0],":", samples[0])

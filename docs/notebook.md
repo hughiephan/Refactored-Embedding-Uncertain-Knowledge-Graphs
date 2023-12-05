@@ -31,7 +31,6 @@ rels = []  # Relation vocab
 index_cons = {}  # {string: index}
 index_rels = {}  # {string: index}
 triples = np.array([0])  # Training dataset
-val_triples = np.array([0])  # Validation dataset
 soft_logic_triples = np.array([0])  # (h,r,t) tuples(int), no w
 triples_record = set([])  # Set containing train, val, test (for negative sampling)
 weights = np.array([0])
@@ -74,7 +73,6 @@ def load_triples(filename):
     return np.array(triples)
 
 triples = load_triples('/kaggle/input/cn15k-dataset/train.tsv')
-val_triples = load_triples('/kaggle/input/cn15k-dataset/val.tsv')
 soft_logic_triples = load_triples('/kaggle/input/cn15k-dataset/softlogic.tsv')
 ```
 

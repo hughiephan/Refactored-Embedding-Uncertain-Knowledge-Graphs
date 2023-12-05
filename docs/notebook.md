@@ -26,8 +26,8 @@ batch_size = 1024
 epochs = 20
 lr=0.001
 # Initialize individual variables
-cons = []  # Concept vocab
-rels = []  # Relation vocab
+cons = []  # Concept dictionary / vocabulary
+rels = []  # Relation dictionary / vocabulary
 index_cons = {}  # {string: index}
 index_rels = {}  # {string: index}
 triples = np.array([0])  # Training dataset

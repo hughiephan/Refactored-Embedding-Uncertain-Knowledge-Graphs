@@ -32,11 +32,8 @@ index_cons = {}  # {string: index}
 index_rels = {}  # {string: index}
 triples = np.array([0])  # Training dataset
 soft_logic_triples = np.array([0])  # (h,r,t) tuples(int), no w
-triples_record = set([])  # Set containing train, val, test (for negative sampling)
-weights = np.array([0])
 dim = 64
 batch_size = 1024
-L1 = False
 ```
 
 ## Step 3: Define Data

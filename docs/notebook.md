@@ -25,15 +25,14 @@ neg_per_positive = 10
 batch_size = 1024
 epochs = 20
 lr=0.001
-# Initialize individual variables
-cons = []  # Concept dictionary / vocabulary
-rels = []  # Relation dictionary / vocabulary
-index_cons = {}  # {string: index}
-index_rels = {}  # {string: index}
-triples = np.array([0])  # Training dataset
-soft_logic_triples = np.array([0])  # (h,r,t) tuples(int), no w
 dim = 64
 batch_size = 1024
+cons = []  # Concept dictionary or vocabulary
+rels = []  # Relation dictionary or vocabulary
+index_cons = {}  # {Concept: index of concept}
+index_rels = {}  # {Relation: index of relation}
+triples = np.array([0])  # Training dataset
+soft_logic_triples = np.array([0])  # Soft logic dataset
 ```
 
 ## Step 3: Define Data
@@ -95,7 +94,7 @@ def gen_and_corrupt_batch(triples, batch_size, neg_per_positive, cons):
         np.random.shuffle(triples)
         for i in range(0, l, batch_size):
             batch = triples[i : i + batch_size, :]
-           
+                        
             if batch.shape[0] < batch_size:
                 batch = np.concatenate((batch, triples[:batch_size - batch.shape[0]]), axis=0)
 
@@ -139,14 +138,7 @@ Then defines the placeholders for input data: `_A_*` placeholders for indices of
 
 ```python
 class UKGE_LOGI(object):
-    '''
-    UKGE Logistic Regression
-    
-    '''
     def __init__(self, num_rels, num_cons, dim, batch_size, neg_per_positive, p_neg):
-        '''
-        Initialize the variables
-        '''
         self.num_rels = num_rels # Number of relations
         self.num_cons = num_cons # Number of ontologies
         self.dim = dim  # Dimension of both relation and ontology.

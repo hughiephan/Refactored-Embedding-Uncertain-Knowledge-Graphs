@@ -40,7 +40,7 @@ batch_size = 1024
 
 We define a new class to load the triplets in the CN15K dataset. It will have a batch function to load the data by batches instead of separate data points. The class also have the corrupt function to corrupt some samples for testing the model.
 
-![image](https://github.com/hughiephan/UKGE/assets/16631121/44a1011f-27a3-45a5-94dc-a2cc839decc7)
+![Untitled-2023-07-31-0913](https://github.com/hughiephan/UKGE/assets/16631121/22c5daa8-83db-4b3c-bf81-fbbd9484510c)
 
 ```python
 def load_triples(filename):

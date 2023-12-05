@@ -88,17 +88,8 @@ soft_h_index, soft_r_index, soft_t_index, soft_w_index = (
 
 ## Step 5: Gen and corrupt batch
 ```
-def corrupt_batch(h_batch, r_batch, t_batch, batch_size, neg_per_positive, cons):
+def gen_and_corrupt_batch(triples, batch_size, neg_per_positive, cons):
     N = len(cons)
-    neg_hn_batch = np.random.randint(0, N, size=(batch_size, neg_per_positive))
-    neg_rel_hn_batch = np.tile(r_batch, (neg_per_positive, 1)).transpose()
-    negt_batch = np.tile(t_batch, (neg_per_positive, 1)).transpose()
-    negh_batch = np.tile(h_batch, (neg_per_positive, 1)).transpose()
-    neg_rel_tn_batch = neg_rel_hn_batch
-    neg_tn_batch = np.random.randint(0, N, size=(batch_size, neg_per_positive))
-    return neg_hn_batch, neg_rel_hn_batch, negt_batch, negh_batch, neg_rel_tn_batch, neg_tn_batch
-
-def gen_batch(triples, batch_size, neg_per_positive, cons):
     l = triples.shape[0]
     while True:
         np.random.shuffle(triples)
@@ -116,9 +107,15 @@ def gen_batch(triples, batch_size, neg_per_positive, cons):
                 batch[:, 3],
             )
             hrt_batch = batch[:, 0:3].astype(int)
-            neg_hn_batch, neg_rel_hn_batch, negt_batch, negh_batch, neg_rel_tn_batch, neg_tn_batch = corrupt_batch(
-                h_batch, r_batch, t_batch, batch_size, neg_per_positive, cons
-            )
+            
+            # Corrupt Batch
+            neg_hn_batch = np.random.randint(0, N, size=(batch_size, neg_per_positive))
+            neg_rel_hn_batch = np.tile(r_batch, (neg_per_positive, 1)).transpose()
+            negt_batch = np.tile(t_batch, (neg_per_positive, 1)).transpose()
+            negh_batch = np.tile(h_batch, (neg_per_positive, 1)).transpose()
+            neg_rel_tn_batch = neg_rel_hn_batch
+            neg_tn_batch = np.random.randint(0, N, size=(batch_size, neg_per_positive))
+            
             yield (
                 h_batch.astype(np.int64),
                 r_batch.astype(np.int64),
@@ -293,7 +290,7 @@ print('Number of batches per epoch: %d' % num_batch)
 train_losses = []
 val_losses = []
 for epoch in range(1, epochs + 1):
-    generated_batch = gen_batch(triples, batch_size, neg_per_positive, cons)
+    generated_batch = gen_and_corrupt_batch(triples, batch_size, neg_per_positive, cons)
     epoch_loss = []
     for batch_id in range(num_batch):
         batch = next(generated_batch)

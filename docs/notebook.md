@@ -290,8 +290,8 @@ sess = tf.Session()
 sess.run(tf.global_variables_initializer())
 num_batch = triples.shape[0] // batch_size
 print('Number of batches per epoch: %d' % num_batch)
-train_losses = []  # [[every epoch, loss]]
-val_losses = []  # [[saver epoch, loss]]
+train_losses = []
+val_losses = []
 for epoch in range(1, epochs + 1):
     generated_batch = gen_batch(triples, batch_size, neg_per_positive, cons)
     epoch_loss = []

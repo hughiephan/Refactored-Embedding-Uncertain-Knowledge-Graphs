@@ -27,51 +27,24 @@ epochs = 20
 lr=0.001
 ```
 
-## Step 3: Define Data and BatchLoader
+## Step 3: Define Data
 
 We define a new class to load the triplets in the CN15K dataset. It will have a batch function to load the data by batches instead of separate data points. The class also have the corrupt function to corrupt some samples for testing the model.
 
 ```python
 class Data(object):
-    '''Interfaces for holding all data.
-    '''
-    
-    def num_cons(self):
-        '''Returns number of ontologies.
-
-        This means all ontologies have index that 0 <= index < num_onto().
-        '''
-        return len(self.cons)
-
-    def num_rels(self):
-        '''Returns number of relations.
-
-        This means all relations have index that 0 <= index < num_rels().
-        Note that we consider *ALL* relations, e.g. $R_O$, $R_h$ and $R_{tr}$.
-        '''
-        return len(self.rels)
-
     def __init__(self):
         self.cons = [] # Concept vocab
         self.rels = [] # Relation vocab
-        # Transitive rels vocab
         self.index_cons = {}  # {string: index}
         self.index_rels = {}  # {string: index}
-        # save triples as array of indices
         self.triples = np.array([0])  # training dataset
         self.val_triples = np.array([0])  # validation dataset
-        self.soft_logic_triples = np.array([0])
-        # (h,r,t) tuples(int), no w
-        # set containing train, val, test (for negative sampling).
-        self.triples_record = set([])
+        self.soft_logic_triples = np.array([0]) # (h,r,t) tuples(int), no w
+        self.triples_record = set([]) # set containing train, val, test (for negative sampling).
         self.weights = np.array([0])
         self.neg_triples = np.array([0])
-        # map for sigma
-        # head per tail and tail per head (for each relation). used for bernoulli negative sampling
-        self.hpt = np.array([0])
-        self.tph = np.array([0])
-        # recorded for model
-        self.dim = 64
+        self.dim = 64 
         self.batch_size = 1024
         self.L1 = False
 
@@ -80,8 +53,6 @@ class Data(object):
         triples = []
         last_c = -1
         last_r = -1
-        hr_map = {}
-        tr_map = {}
         for line in open(filename):
             line = line.rstrip(line_end).split(splitter)
             if self.index_cons.get(line[0]) == None:
@@ -109,17 +80,16 @@ class Data(object):
         self.val_triples = self.load_triples(file_val, splitter, line_end)
         if file_psl is not None:
             self.soft_logic_triples = self.load_triples(file_psl, splitter, line_end)
-        # calculate tph and hpt
-        tph_array = np.zeros((len(self.rels), len(self.cons)))
-        hpt_array = np.zeros((len(self.rels), len(self.cons)))
-        for h_, r_, t_, w in self.triples:  # only training data
-            h, r, t = int(h_), int(r_), int(t_)
-            tph_array[r][h] += 1.
-            hpt_array[r][t] += 1.
-        self.tph = np.mean(tph_array, axis=1)
-        self.hpt = np.mean(hpt_array, axis=1)
-        # print("-- total number of entities:", len(self.cons))
         
+this_data = Data()
+this_data.load_data(file_train='/kaggle/input/cn15k-dataset/train.tsv', 
+                file_val='/kaggle/input/cn15k-dataset/val.tsv', 
+                file_psl='/kaggle/input/cn15k-dataset/softlogic.tsv')
+```
+
+## Step 4: BatchLoader
+
+```        
 class BatchLoader():
     def __init__(self, data_obj, batch_size, neg_per_positive):
         self.this_data = data_obj  # Data() object
@@ -156,7 +126,7 @@ class BatchLoader():
                 break
 
     def corrupt_batch(self, h_batch, r_batch, t_batch):
-        N = self.this_data.num_cons()  # number of entities
+        N = len(self.this_data.cons)  # number of entities
         neg_hn_batch = np.random.randint(0, N, size=(self.batch_size, self.neg_per_positive))  # random index without filtering
         neg_rel_hn_batch = np.tile(r_batch, (self.neg_per_positive, 1)).transpose()  # copy
         negt_batch = np.tile(t_batch, (self.neg_per_positive, 1)).transpose()
@@ -164,14 +134,7 @@ class BatchLoader():
         neg_rel_tn_batch = neg_rel_hn_batch
         neg_tn_batch = np.random.randint(0, N, size=(self.batch_size, self.neg_per_positive))
         return neg_hn_batch, neg_rel_hn_batch, negt_batch, negh_batch, neg_rel_tn_batch, neg_tn_batch
-```
 
-## Step 4: Load data
-```python
-this_data = Data()
-this_data.load_data(file_train='/kaggle/input/cn15k-dataset/train.tsv', 
-                file_val='/kaggle/input/cn15k-dataset/val.tsv', 
-                file_psl='/kaggle/input/cn15k-dataset/softlogic.tsv')
 batchloader = BatchLoader(this_data, batch_size, neg_per_positive)
 ```
 
@@ -313,12 +276,12 @@ $$loss_{A} = loss_{main} + loss_{psl}$$
 
 ## Step 9: Model
 ```python
-model = UKGE_LOGI(num_rels=this_data.num_rels(),
-                num_cons=this_data.num_cons(),
-                dim=this_data.dim,
-                batch_size=this_data.batch_size, 
-                neg_per_positive=10, 
-                p_neg=1)
+model = UKGE_LOGI(num_rels = len(this_data.rels),
+                num_cons = len(this_data.cons),
+                dim = this_data.dim,
+                batch_size = this_data.batch_size, 
+                neg_per_positive = 10, 
+                p_neg = 1)
 model.build()
 ```
 

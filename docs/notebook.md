@@ -25,7 +25,7 @@ neg_per_positive = 10
 batch_size = 1024
 epochs = 20
 lr=0.001
-# Initialize data variables
+# Initialize individual variables
 cons = []  # Concept vocab
 rels = []  # Relation vocab
 index_cons = {}  # {string: index}
@@ -298,7 +298,6 @@ for epoch in range(1, epochs + 1):
     for batch_id in range(num_batch):
         batch = next(generated_batch)
         A_h_index, A_r_index, A_t_index, A_w, A_neg_hn_index, A_neg_rel_hn_index, A_neg_t_index, A_neg_h_index, A_neg_rel_tn_index, A_neg_tn_index = batch
-        soft_h_index, soft_r_index, soft_t_index, soft_w_index = gen_psl_samples(soft_logic_triples)
         _, gradient, A_loss, psl_mse, mse_pos, mse_neg, main_loss, psl_prob, psl_mse_each, _ = sess.run(
             [
                 model.train_op, 

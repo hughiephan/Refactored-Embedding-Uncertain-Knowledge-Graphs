@@ -73,6 +73,8 @@ soft_logic_triples = load_triples('/kaggle/input/cn15k-dataset/softlogic.tsv')
 
 ## Step 4: Soft Index
 
+Pick only one soft logic triple for training
+
 ```python
 n_soft_samples = 1
 triple_indices = np.random.randint(0, soft_logic_triples.shape[0], size=n_soft_samples)

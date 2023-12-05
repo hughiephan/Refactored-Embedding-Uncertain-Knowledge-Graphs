@@ -89,7 +89,7 @@ this_data.load_data(file_train='/kaggle/input/cn15k-dataset/train.tsv',
 
 ## Step 4: BatchLoader
 
-```        
+```python
 class BatchLoader():
     def __init__(self, data_obj, batch_size, neg_per_positive):
         self.this_data = data_obj  # Data() object

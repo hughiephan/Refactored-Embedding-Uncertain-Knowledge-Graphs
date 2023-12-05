@@ -130,8 +130,6 @@ def gen_and_corrupt_batch(triples, batch_size, neg_per_positive, cons):
                 neg_rel_tn_batch.astype(np.int64),
                 neg_tn_batch.astype(np.int64),
             )
-        if not forever:
-            break
 ```
 
 ## Step 6: Define UKGE LOGI Model

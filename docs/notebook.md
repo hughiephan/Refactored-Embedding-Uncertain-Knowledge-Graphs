@@ -32,8 +32,6 @@ lr=0.001
 We define a new class to load the triplets in the CN15K dataset. It will have a batch function to load the data by batches instead of separate data points. The class also have the corrupt function to corrupt some samples for testing the model.
 
 ```python
-import numpy as np
-
 # Initialize individual variables
 cons = []  # Concept vocab
 rels = []  # Relation vocab

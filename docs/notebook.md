@@ -87,7 +87,7 @@ soft_h_index, soft_r_index, soft_t_index, soft_w_index = (
 ```
 
 ## Step 5: Gen and corrupt batch
-```
+```python
 def gen_and_corrupt_batch(triples, batch_size, neg_per_positive, cons):
     N = len(cons)
     l = triples.shape[0]

@@ -77,7 +77,7 @@ def load_triples(filename):
 
 triples = load_triples('/kaggle/input/cn15k-dataset/train.tsv')
 val_triples = load_triples('/kaggle/input/cn15k-dataset/val.tsv')
-soft_logic_triples = load_data(''/kaggle/input/cn15k-dataset/softlogic.tsv')
+soft_logic_triples = load_data('/kaggle/input/cn15k-dataset/softlogic.tsv')
 ```
 
 ## Step 4: BatchLoader

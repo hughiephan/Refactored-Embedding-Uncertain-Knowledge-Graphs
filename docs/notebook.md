@@ -72,22 +72,22 @@ triples = load_triples('/kaggle/input/cn15k-dataset/train.tsv')
 soft_logic_triples = load_triples('/kaggle/input/cn15k-dataset/softlogic.tsv')
 ```
 
-## Step 4: BatchLoader
+## Step 4: Soft Index
 
 ```python
-def gen_psl_samples(soft_logic_triples):
-    n_soft_samples = 1
-    triple_indices = np.random.randint(0, soft_logic_triples.shape[0], size=n_soft_samples)
-    samples = soft_logic_triples[triple_indices, :]
-    soft_h, soft_r, soft_t, soft_lb = (
-        samples[:, 0].astype(int),
-        samples[:, 1].astype(int),
-        samples[:, 2].astype(int),
-        samples[:, 3],
-    )
-    soft_sample_batch = (soft_h, soft_r, soft_t, soft_lb)
-    return soft_sample_batch
+n_soft_samples = 1
+triple_indices = np.random.randint(0, soft_logic_triples.shape[0], size=n_soft_samples)
+samples = soft_logic_triples[triple_indices, :]
+soft_h_index, soft_r_index, soft_t_index, soft_w_index = (
+    samples[:, 0].astype(int),
+    samples[:, 1].astype(int),
+    samples[:, 2].astype(int),
+    samples[:, 3],
+)
+```
 
+## Step 5: Gen and corrupt batch
+```
 def corrupt_batch(h_batch, r_batch, t_batch, batch_size, neg_per_positive, cons):
     N = len(cons)
     neg_hn_batch = np.random.randint(0, N, size=(batch_size, neg_per_positive))
@@ -135,9 +135,9 @@ def gen_batch(triples, batch_size, neg_per_positive, cons):
             break
 ```
 
-## Step 5: Define UKGE LOGI Model
+## Step 6: Define UKGE LOGI Model
 
-`__init__` method initializes various parameters required for the UKGE Logistic Regression model, like the number of relations `num_rels`, number of ontologies `num_cons`, embedding dimensions `dim`, batch size `batch_size`, etc. It also sets default values for certain coefficients and variables used in the model.
+Embedding dimensions `dim`, batch size `batch_size`, etc. It also sets default values for certain coefficients and variables used in the model.
 
 Then defines the placeholders for input data: `_A_*` placeholders for indices of entities and relations, `_soft_*` placeholders for uncertain graph and PSL-related data and initializes trainable variables with `ht` for entity embeddings, and `r` for relation embeddings. Embeddings for positive and negative samples are looked up from the embedding matrices using `tf.nn.embedding_lookup`. With `main_loss` computes the main loss for the model. It uses the embeddings to calculate scores for positive and negative samples and computes a loss based on the difference between these scores and the expected scores `A_w` placeholder. While `psl_loss` computes the loss related to Probabilistic Soft Logic (PSL). It involves calculating a probability based on uncertain graph embeddings and then calculating the error against expected soft constraints. And the `opt` uses the Adam optimizer to minimize the combined loss `A_loss`, which includes both the main loss and the PSL loss. `train_op` applies the gradients computed by the optimizer to update the model parameters during training.
 
@@ -202,7 +202,7 @@ class UKGE_LOGI(object):
         ....
 ```
 
-## Step 6: Compute Main Loss
+## Step 7: Compute Main Loss
 
 Combine the H, T, and R together. Then we need to calculate the score of h, hn, and tn based on the probability. Finally, get the loss value based on the scores.
 
@@ -235,7 +235,7 @@ $$loss_{main} = \frac{\sum (\frac{f_{score_{tn}} + f_{score_{hn}}}{2} \times p_{
         ...
 ```
 
-## Step 7: Compute PSL Loss
+## Step 8: Compute PSL Loss
 
 $$prob_{psl} = \(\sigma ( w \cdot \sum_{i=1}^{n} ( \text{R}_i \cdot ( \text{H}_i \cdot \text{T}_i ) ) + b )\)$$
 
@@ -257,7 +257,7 @@ With $\text{p-psl}$ is coefficient, and `prior_psl0` is just a constant 0, and p
         ...
 ```
 
-## Step 8: Optimization
+## Step 9: Optimization
 
 $$loss_{A} = loss_{main} + loss_{psl}$$
 
@@ -270,7 +270,7 @@ $$loss_{A} = loss_{main} + loss_{psl}$$
         self.train_op = self.opt.apply_gradients(self.gradient)
 ```
 
-## Step 9: Model
+## Step 10: Model
 ```python
 model = UKGE_LOGI(num_rels = len(rels),
                 num_cons = len(cons),
@@ -281,7 +281,7 @@ model = UKGE_LOGI(num_rels = len(rels),
 model.build()
 ```
 
-## Step 10: Training
+## Step 11: Training
 
 A session is created and started using `tf.Session()` and `Session.run` takes the operations we created and data to be fed as parameters and it returns the result. Only after running `tf.global_variables_initializer()` in a session will the variables hold the values you told them to hold.
 
@@ -340,5 +340,5 @@ Here's the result:
 
 ![image](https://github.com/hughiephan/UKGE/assets/16631121/f0b4d7f5-62c4-4755-b9a5-85f1e54fef43)
 
-## (Optional) Step 11: Validation
+## (Optional) Step 12: Validation
 If you want Validation Data, please run the UKGE Codebase as this Notebook is focus on explaining the concept not for benchmarking

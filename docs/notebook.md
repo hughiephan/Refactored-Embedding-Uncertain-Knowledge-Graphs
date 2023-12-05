@@ -95,11 +95,10 @@ def gen_and_corrupt_batch(triples, batch_size, neg_per_positive, cons):
         np.random.shuffle(triples)
         for i in range(0, l, batch_size):
             batch = triples[i : i + batch_size, :]
+           
             if batch.shape[0] < batch_size:
-                batch = np.concatenate(
-                    (batch, triples[:batch_size - batch.shape[0]]), axis=0
-                )
-                assert batch.shape[0] == batch_size
+                batch = np.concatenate((batch, triples[:batch_size - batch.shape[0]]), axis=0)
+
             h_batch, r_batch, t_batch, w_batch = (
                 batch[:, 0].astype(int),
                 batch[:, 1].astype(int),

@@ -25,14 +25,7 @@ neg_per_positive = 10
 batch_size = 1024
 epochs = 20
 lr=0.001
-```
-
-## Step 3: Define Data
-
-We define a new class to load the triplets in the CN15K dataset. It will have a batch function to load the data by batches instead of separate data points. The class also have the corrupt function to corrupt some samples for testing the model.
-
-```python
-# Initialize individual variables
+# Initialize data variables
 cons = []  # Concept vocab
 rels = []  # Relation vocab
 index_cons = {}  # {string: index}
@@ -46,7 +39,13 @@ neg_triples = np.array([0])
 dim = 64
 batch_size = 1024
 L1 = False
+```
 
+## Step 3: Define Data
+
+We define a new class to load the triplets in the CN15K dataset. It will have a batch function to load the data by batches instead of separate data points. The class also have the corrupt function to corrupt some samples for testing the model.
+
+```python
 # Load triples function
 def load_triples(filename, splitter='\t', line_end='\n'):
     triples_loaded = []
@@ -81,7 +80,6 @@ def load_data(file_train, file_val, file_psl=None, splitter='\t', line_end='\n')
     soft_logic_triples = load_triples(file_psl, splitter, line_end)
     return triples, val_triples, soft_logic_triples
     
-
 # Usage
 triples, val_triples, soft_logic_triples = load_data(file_train='/kaggle/input/cn15k-dataset/train.tsv', 
                                                       file_val='/kaggle/input/cn15k-dataset/val.tsv', 
@@ -295,7 +293,7 @@ A session is created and started using `tf.Session()` and `Session.run` takes th
 ```python
 sess = tf.Session()
 sess.run(tf.global_variables_initializer())
-num_batch = this_data.triples.shape[0] // batch_size
+num_batch = triples.shape[0] // batch_size
 print('Number of batches per epoch: %d' % num_batch)
 train_losses = []  # [[every epoch, loss]]
 val_losses = []  # [[saver epoch, loss]]

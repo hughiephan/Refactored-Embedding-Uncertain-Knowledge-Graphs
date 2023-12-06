@@ -91,7 +91,7 @@ soft_h_index, soft_r_index, soft_t_index, soft_w_index = (
 
 ## Step 5: Gen and corrupt batch
 
-![image](https://github.com/hughiephan/UKGE/assets/16631121/1306c22f-3c12-47f8-8d9b-0912bd952525)
+![Untitled-2023-07-31-0913](https://github.com/hughiephan/UKGE/assets/16631121/ca205bc1-6ae5-4054-9244-fe615a8f5487)
 
 ```python
 def gen_and_corrupt_batch(triples, batch_size, neg_per_positive, cons):
@@ -100,11 +100,9 @@ def gen_and_corrupt_batch(triples, batch_size, neg_per_positive, cons):
     while True:
         np.random.shuffle(triples)
         for i in range(0, l, batch_size):
-            batch = triples[i : i + batch_size, :]
-                        
+            batch = triples[i : i + batch_size]
             if batch.shape[0] < batch_size:
                 batch = np.concatenate((batch, triples[:batch_size - batch.shape[0]]), axis=0)
-
             h_batch, r_batch, t_batch, w_batch = (
                 batch[:, 0].astype(int),
                 batch[:, 1].astype(int),

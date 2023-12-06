@@ -54,3 +54,12 @@ plt.show()
 ```
 
 ![image](https://github.com/hughiephan/UKGE/assets/16631121/afe2bc04-d0da-4d7b-a86d-e20564ca0e11)
+
+## New calculation
+```python
+for index1, row1 in data.iterrows():
+    for index2, row2 in data.iterrows():
+        for index3, row3 in data.iterrows():
+            number = np.max(1 - row1['weight'] * row2['weight'], row3['weight'])
+            if (number <= threshold):
+```

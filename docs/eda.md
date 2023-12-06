@@ -56,7 +56,7 @@ plt.show()
 
 ![image](https://github.com/hughiephan/UKGE/assets/16631121/afe2bc04-d0da-4d7b-a86d-e20564ca0e11)
 
-## New calculation
+## Step 1
 
 `data.head()` will show only the first few values.
 
@@ -66,4 +66,14 @@ for index1, row1 in data.head().iterrows():
         for index3, row3 in data.head().iterrows():
             number = np.maximum(1 - row1['weight'] * row2['weight'], row3['weight'])
             print(number)
+```
+
+## Step 2: 
+EDA, Means 0.7 pick relations beyond certain threashold, 
+```
+pandas sort the values for all the relations (mean, algorithm)
+R14 ~ R12: 0.8
+R13 ~ R10. 0.7
+.....
+R1: 0.2 (remove this one)
 ```

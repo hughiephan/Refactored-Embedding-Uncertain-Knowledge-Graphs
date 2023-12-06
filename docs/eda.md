@@ -8,6 +8,7 @@ Use Dataset from https://www.kaggle.com/datasets/thala321/cn15k-dataset , which 
 import networkx as nx
 import matplotlib.pyplot as plt
 import pandas as pd
+import numpy as np
 
 data = pd.read_csv('/kaggle/input/cn15k-dataset/data.tsv', sep='\t', header=None, names=['entity_1','relation','entity_2','weight'])
 entity = pd.read_csv('/kaggle/input/cn15k-dataset/entity_id.csv').rename(columns={'entity string': 'entity_string'})
@@ -56,10 +57,13 @@ plt.show()
 ![image](https://github.com/hughiephan/UKGE/assets/16631121/afe2bc04-d0da-4d7b-a86d-e20564ca0e11)
 
 ## New calculation
+
+`data.head()` will show only the first few values.
+
 ```python
-for index1, row1 in data.iterrows():
-    for index2, row2 in data.iterrows():
-        for index3, row3 in data.iterrows():
-            number = np.max(1 - row1['weight'] * row2['weight'], row3['weight'])
-            if (number <= threshold):
+for index1, row1 in data.head().iterrows():
+    for index2, row2 in data.head().iterrows():
+        for index3, row3 in data.head().iterrows():
+            number = np.maximum(1 - row1['weight'] * row2['weight'], row3['weight'])
+            print(number)
 ```

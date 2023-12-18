@@ -77,3 +77,43 @@ R13 ~ R10. 0.7
 .....
 R1: 0.2 (remove this one)
 ```
+
+## Calculate all relations
+```python
+weights_rs0 = df[df['relation'] == 0]['weight']
+weights_rs2 = df[df['relation'] == 2]['weight']
+
+unique_relations = sorted(df['relation'].unique())
+for relation in unique_relations:
+    # Get all 35 relations and it's mean weight
+    relation_df = df[df['relation'] == relation]
+    mean_weight = relation_df['weight'].mean()
+    print("-------")
+    print("Testing with relation", relation)
+    print("Relation mean weight: ", mean_weight)
+    
+    # Calculating: Weight 0 and Weight 1 with all the 35 Relation Mean Weights
+    sum = 0
+    count = 0
+    for weight_0 in weights_rs0: 
+        for weight_2 in weights_rs2: 
+            number = np.maximum(1 - weight_0 * weight_2, mean_weight)
+            count +=1
+            sum +=number
+        if (count % 100000 == 0): # Should take 30 seconds 
+            print("Calculating...")
+    print("Sum/count:", sum/count)
+```
+
+## Making a dictionary
+```python
+# Loop through every rows of DF
+for index, row in df.head().iterrows():
+  # Get R1T1
+  r1t1 = str(row["relation"])+row["entity_string_2"]
+  print(r1t1)
+  x = row["entity_string_1"]
+  ourDict[r1t1] = [{"name": x, "weight": row["weight"]}] # Append function in array
+
+print(ourDict)
+```

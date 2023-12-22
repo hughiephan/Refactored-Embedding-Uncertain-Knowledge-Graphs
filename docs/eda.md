@@ -117,3 +117,98 @@ for index, row in df.head().iterrows():
 
 print(ourDict)
 ```
+
+## Example
+
+```
+Today is cloudy - key1: is cloudy
+Today use umbrella - key2: use umbrella
+Today is rainy - key3: is rainy
+Today relatedTo tomorrow - key4: relatedTo tomorrow
+Today is placeholder X
+
+# Algorithm
+1th
+Today is cloudy    -   key1: is cloudy
+Today is cloudy    -   key1: is cloudy
+Today is cloudy    -   key1: is cloudy
+each key triplet, the weights
+
+2nd
+Today is cloudy    -   key1: is cloudy
+Today is cloudy    -   key1: is cloudy
+Today use umbrella  -   key2: use umbrella
+save triplet
+
+3rd
+Today is cloudy    -   key1: is cloudy
+Today is cloudy    -   key1: is cloudy
+Today is rainy        -     key3: is rainy
+save triplet
+
+.....
+
+n-th
+Today relatedTo tomorrow       -   key4: relatedTo tomorrow
+Today relatedTo tomorrow       -   key4: relatedTo tomorrow
+Today relatedTo tomorrow       -   key4: relatedTo tomorrow
+
+
+
+Key triplet1: (key1, key2, key3) can appear many times and with have different weights each time
+
+Today is cloudy    -   key1: is cloudy
+Today use umbrella  -   key2: use umbrella
+Today is rainy        -     key3: is rainy
+
+-------------
+Key triplet2: (key1, key2, key3)
+Tomorrow is cloudy    -   key1: is cloudy
+Tomorrow use umbrella  -   key2: use umbrella
+Tomorrow is rainy        -     key3: is rainy
+
+Dictionary
+Key1Key2Key3:    Array( (today,weight of today), (tomorrow, weight of tomorrow))
+
+
+
+Array (have a check if placeholder is the same)
+(key1, key2, key3, max_weight)
+(key3, key2, key3, max_weight)
+
+Dictionary
+key1key2key3 =  (key1, key2, key3, max_weight)
+key3key4key5 =  (key3, key4, key5, max_weight)
+```
+
+## Creating Key Triplet
+
+```python
+key_triplet_dict = []
+sum = 0
+count = 0
+for key_1, values_1 in ourDict.items():
+    for key_2, values_2 in ourDict.items():
+        for key_3, values_3 in ourDict.items():
+            
+            weight_1 = values_1[0][1]
+            weight_2 = values_2[0][1]
+            weight_3 = values_3[0][1]
+
+            head_1 = values_1[0][0]
+            head_2 = values_2[0][0]
+            head_3 = values_3[0][0]
+            
+            if head_1 == head_2 == head_3 and key_1 != key_2 and key_2 != key_3:
+                max_weight = max(1 - weight_1 * weight_2, weight_3)
+                key_triplet = (key_1, key_2, key_3, max_weight)
+                key_triplet_dict.append(key_triplet)
+                count = count + 1
+                if (count % 100 == 0):
+                    print(key_triplet)
+
+# Keytriplet: Array( (today,weight of today), (tomorrow, weight of tomorrow))
+# Saved key triplet
+# Now we loop through key triplets and check if the key triplets has the same key_2 and key_3. If this happen, we will calculate the average of that.
+# score[key_2, key_3] = [weight1, weight2,...., weight1000] 
+```

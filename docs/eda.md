@@ -184,7 +184,7 @@ key3key4key5 =  (key3, key4, key5, max_weight)
 ## Creating Key Triplet
 
 ```python
-key_triplet_dict = []
+key_triplet_array = []
 sum = 0
 count = 0
 for key_1, values_1 in ourDict.items():
@@ -202,13 +202,11 @@ for key_1, values_1 in ourDict.items():
             if head_1 == head_2 == head_3 and key_1 != key_2 and key_2 != key_3:
                 max_weight = max(1 - weight_1 * weight_2, weight_3)
                 key_triplet = (key_1, key_2, key_3, max_weight)
-                key_triplet_dict.append(key_triplet)
+                key_triplet_array.append(key_triplet)   # Todo: Update this into dictionary format with Keytriplet: Array( (today,weight of today), (tomorrow, weight of tomorrow))
                 count = count + 1
                 if (count % 100 == 0):
                     print(key_triplet)
 
-# Keytriplet: Array( (today,weight of today), (tomorrow, weight of tomorrow))
-# Saved key triplet
-# Now we loop through key triplets and check if the key triplets has the same key_2 and key_3. If this happen, we will calculate the average of that.
+# Now loop through the key_triplet_dictionary and check if the key triplets have the same key_2 and key_3. If this happens, we will calculate the average of that.
 # score[key_2, key_3] = [weight1, weight2,...., weight1000] 
 ```

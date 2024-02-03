@@ -174,6 +174,7 @@ class Validator(object):
         raise NotImplementedError("get_score_batch() is not defined in this model's validator")
 
     def get_mse(self, verbose=True, save_dir='', epoch=0):
+        "hi"
         test_triples = self.test_triples
         N = test_triples.shape[0]
 

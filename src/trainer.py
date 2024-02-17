@@ -125,10 +125,13 @@ class Trainer(object):
         self.validator.build_by_var(self.this_data.val_triples, self.model, self.this_data, sess=sess)
 
         if not hasattr(self.validator, 'hr_map'):
+            print("1")
             self.validator.load_hr_map(param.data_dir(), 'test.tsv', ['train.tsv', 'val.tsv', 'test.tsv'])
         if not hasattr(self.validator, 'hr_map_sub'):
+            print("2")
             hr_map200 = self.validator.get_fixed_hr(n=200)  # use smaller size for faster validation
         else:
+            print("3")
             hr_map200 = self.validator.hr_map_sub
 
         mean_ndcg, mean_exp_ndcg = self.validator.mean_ndcg(hr_map200)

@@ -78,7 +78,7 @@ class UKGE(object):
         self.prior_psl0 = tf.constant(self._prior_psl, tf.float32)
         self.psl_error_each = tf.square(tf.maximum(self.soft_w + self.prior_psl0 - self.psl_prob, 0))
         self.psl_mse = tf.reduce_mean(self.psl_error_each)
-        self.psl_loss = self.psl_mse * self._p_psl
+        self.psl_loss = self.psl_mse * 0
 
     @property
     def num_cons(self):
